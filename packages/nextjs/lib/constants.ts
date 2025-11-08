@@ -58,7 +58,7 @@ export const POLL_INTERVAL_LOTTERY_DETAILS = 10_000; // 10 seconds
 export const POLL_INTERVAL_USER_STATS = 30_000; // 30 seconds
 
 // Chain-specific settings
-export const BLOCK_TIME_SECONDS = 12; // Ethereum average block time
+export const BLOCK_TIME_SECONDS = 5; // XRP EVM average block time
 
 // UI Constants
 export const ITEMS_PER_PAGE = 12;

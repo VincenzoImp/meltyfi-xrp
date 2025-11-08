@@ -17,8 +17,8 @@ import generateTsAbis from "./scripts/generateTsAbis";
 // You can generate a random account with `yarn generate` or `yarn account:import` to import your existing PK
 const deployerPrivateKey =
   process.env.__RUNTIME_DEPLOYER_PRIVATE_KEY ?? "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-// If not set, it uses our block explorers default API keys.
-const etherscanApiKey = process.env.ETHERSCAN_V2_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
+// Block explorer API key for contract verification
+const blockExplorerApiKey = process.env.BLOCK_EXPLORER_API_KEY || "";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -67,14 +67,14 @@ const config: HardhatUserConfig = {
       accounts: [deployerPrivateKey],
     },
   },
-  // Configuration for harhdat-verify plugin
+  // Configuration for hardhat-verify plugin (XRP EVM block explorer)
   etherscan: {
-    apiKey: etherscanApiKey,
+    apiKey: blockExplorerApiKey,
   },
-  // Configuration for etherscan-verify from hardhat-deploy plugin
+  // Configuration for hardhat-deploy verification
   verify: {
     etherscan: {
-      apiKey: etherscanApiKey,
+      apiKey: blockExplorerApiKey,
     },
   },
   sourcify: {

@@ -119,7 +119,7 @@ export function getBlockExplorerTxLink(chainId: number, txnHash: string) {
 
 /**
  * Gives the block explorer URL for a given address.
- * Defaults to Etherscan if no (wagmi) block explorer is configured for the network.
+ * Defaults to XRP EVM Explorer if no block explorer is configured for the network.
  */
 export function getBlockExplorerAddressLink(network: chains.Chain, address: string) {
   const blockExplorerBaseURL = network.blockExplorers?.default?.url;
@@ -128,7 +128,7 @@ export function getBlockExplorerAddressLink(network: chains.Chain, address: stri
   }
 
   if (!blockExplorerBaseURL) {
-    return `https://etherscan.io/address/${address}`;
+    return `https://explorer.xrplevm.org/address/${address}`;
   }
 
   return `${blockExplorerBaseURL}/address/${address}`;
