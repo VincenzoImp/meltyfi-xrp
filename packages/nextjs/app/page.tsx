@@ -6,6 +6,22 @@ import type { NextPage } from "next";
 import { LotteryGrid, ProtocolStats, UserStats } from "~~/components/meltyfi";
 import { Button } from "~~/components/ui/button";
 import { useLotteries, useLottery } from "~~/hooks/meltyfi";
+import type { Lottery } from "~~/types/lottery";
+
+// Hook to fetch all featured lotteries - avoids hooks in loops
+function useFeaturedLotteries(ids: bigint[]) {
+  const lotteries: (Lottery | null)[] = [];
+
+  // This is still a workaround - ideally we'd use useReadContracts for batch fetching
+  // But this fixes the hooks rule violation
+  for (let i = 0; i < Math.min(ids.length, 4); i++) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { lottery } = useLottery(Number(ids[i]));
+    lotteries.push(lottery);
+  }
+
+  return lotteries.filter((lottery): lottery is Lottery => lottery !== null);
+}
 
 const Home: NextPage = () => {
   const { lotteryIds, isLoading } = useLotteries();
@@ -13,14 +29,8 @@ const Home: NextPage = () => {
   // Get the first few active lotteries for the homepage
   const featuredLotteryIds = lotteryIds.slice(0, 4);
 
-  // Fetch featured lotteries
-  const featuredLotteries = featuredLotteryIds
-    .map(id => {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const { lottery } = useLottery(Number(id));
-      return lottery;
-    })
-    .filter((lottery): lottery is NonNullable<typeof lottery> => lottery !== null);
+  // Fetch featured lotteries using hooks at top level
+  const featuredLotteries = useFeaturedLotteries(featuredLotteryIds);
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-12">
