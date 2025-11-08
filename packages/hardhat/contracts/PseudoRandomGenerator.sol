@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 /**
  * @title PseudoRandomGenerator
@@ -20,7 +21,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
  * While not truly random, it provides reasonable unpredictability for NFT lotteries
  * where the value at stake is moderate and manipulation cost would exceed potential gain.
  */
-contract PseudoRandomGenerator is OwnableUpgradeable {
+contract PseudoRandomGenerator is OwnableUpgradeable, UUPSUpgradeable {
     // ============ State Variables ============
 
     /// @notice Address of the MeltyFi Protocol contract
@@ -144,4 +145,11 @@ contract PseudoRandomGenerator is OwnableUpgradeable {
     function getNonce() external view returns (uint256) {
         return nonce;
     }
+
+    /**
+     * @notice Authorize contract upgrade (UUPS pattern)
+     * @param newImplementation Address of new implementation
+     * @dev Only owner can upgrade
+     */
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }
