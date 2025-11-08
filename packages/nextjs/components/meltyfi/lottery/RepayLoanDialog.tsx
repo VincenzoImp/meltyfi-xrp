@@ -80,7 +80,7 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
             <div className="space-y-1">
               <p className="text-sm font-medium">{lottery.nftName}</p>
               <p className="text-xs text-muted-foreground">
-                {lottery.wonkaBarsSold} tickets sold • {formatEth(lottery.wonkaBarPrice)} ETH each
+                {lottery.wonkaBarsSold} tickets sold • {formatEth(lottery.wonkaBarPrice)} XRP each
               </p>
             </div>
             <Badge variant="secondary">{lottery.wonkaBarsSold} participants</Badge>
@@ -92,7 +92,7 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Total Raised</span>
-              <span className="font-medium">{formatEth(totalRaised)} ETH</span>
+              <span className="font-medium">{formatEth(totalRaised)} XRP</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
@@ -100,26 +100,26 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
                 <TrendingDown className="h-4 w-4" />
                 Participant Refund Pool (95%)
               </span>
-              <span className="font-medium text-destructive">{formatEth(repaymentAmount)} ETH</span>
+              <span className="font-medium text-destructive">{formatEth(repaymentAmount)} XRP</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Protocol Keeps (5%)</span>
-              <span className="font-medium">{formatEth(protocolKeeps)} ETH</span>
+              <span className="font-medium">{formatEth(protocolKeeps)} XRP</span>
             </div>
 
             <Separator />
 
             <div className="flex items-center justify-between">
               <span className="font-semibold">Repayment Amount</span>
-              <span className="text-lg font-bold text-destructive">{formatEth(repaymentAmount)} ETH</span>
+              <span className="text-lg font-bold text-destructive">{formatEth(repaymentAmount)} XRP</span>
             </div>
 
             <div className="text-xs text-muted-foreground space-y-1">
-              <p>• You received {formatEth((totalRaised * BigInt(95)) / BigInt(100))} ETH initially (95%)</p>
-              <p>• You must repay {formatEth(repaymentAmount)} ETH to cancel (100% of sales)</p>
+              <p>• You received {formatEth((totalRaised * BigInt(95)) / BigInt(100))} XRP initially (95%)</p>
+              <p>• You must repay {formatEth(repaymentAmount)} XRP to cancel (100% of sales)</p>
               <p>
-                • Net cost: {formatEth(repaymentAmount - (totalRaised * BigInt(95)) / BigInt(100))} ETH (5% premium)
+                • Net cost: {formatEth(repaymentAmount - (totalRaised * BigInt(95)) / BigInt(100))} XRP (5% premium)
               </p>
             </div>
           </div>
@@ -171,7 +171,7 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
             variant="destructive"
             className="min-w-[120px]"
           >
-            {isPending ? "Processing..." : `Repay ${formatEth(repaymentAmount)} ETH`}
+            {isPending ? "Processing..." : `Repay ${formatEth(repaymentAmount)} XRP`}
           </Button>
         </DialogFooter>
       </DialogContent>

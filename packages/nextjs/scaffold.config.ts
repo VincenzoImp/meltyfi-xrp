@@ -1,4 +1,5 @@
 import * as chains from "viem/chains";
+import { Chain } from "viem";
 
 export type BaseConfig = {
   targetNetworks: readonly chains.Chain[];
@@ -13,9 +14,60 @@ export type ScaffoldConfig = BaseConfig;
 
 export const DEFAULT_ALCHEMY_API_KEY = "cR4WnXePioePZ5fFrnSiR";
 
+// Define XRP EVM Mainnet chain
+export const xrplEvmMainnet = {
+  id: 1440000,
+  name: "XRPL EVM",
+  nativeCurrency: {
+    decimals: 18,
+    name: "XRP",
+    symbol: "XRP",
+  },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.xrplevm.org"],
+    },
+    public: {
+      http: ["https://rpc.xrplevm.org"],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: "XRPL EVM Explorer",
+      url: "https://explorer.xrplevm.org",
+    },
+  },
+} as const satisfies Chain;
+
+// Define XRP EVM Testnet chain
+export const xrplEvmTestnet = {
+  id: 1449000,
+  name: "XRPL EVM Testnet",
+  nativeCurrency: {
+    decimals: 18,
+    name: "XRP",
+    symbol: "XRP",
+  },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.testnet.xrplevm.org"],
+    },
+    public: {
+      http: ["https://rpc.testnet.xrplevm.org"],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: "XRPL EVM Testnet Explorer",
+      url: "https://explorer.testnet.xrplevm.org",
+    },
+  },
+  testnet: true,
+} as const satisfies Chain;
+
 const scaffoldConfig = {
   // The networks on which your DApp is live
-  targetNetworks: [chains.hardhat],
+  targetNetworks: [xrplEvmTestnet],
   // The interval at which your front-end polls the RPC servers for new data (it has no effect if you only target the local network (default is 4000))
   pollingInterval: 30000,
   // This is ours Alchemy's default API key.

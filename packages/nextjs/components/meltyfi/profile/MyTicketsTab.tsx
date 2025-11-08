@@ -147,11 +147,11 @@ function TicketCard({ lottery, userAddress }: { lottery: Lottery; userAddress: `
               </div>
               <div>
                 <p className="text-muted-foreground">Investment</p>
-                <p className="font-semibold">{formatEth(lottery.wonkaBarPrice * BigInt(userBalance))} ETH</p>
+                <p className="font-semibold">{formatEth(lottery.wonkaBarPrice * BigInt(userBalance))} XRP</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Ticket Price</p>
-                <p className="font-semibold">{formatEth(lottery.wonkaBarPrice)} ETH</p>
+                <p className="font-semibold">{formatEth(lottery.wonkaBarPrice)} XRP</p>
               </div>
             </div>
 

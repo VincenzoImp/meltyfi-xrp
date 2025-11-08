@@ -171,7 +171,7 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Purchase Tickets</span>
-                <span className="text-2xl font-bold">{formatEth(lottery.wonkaBarPrice)} ETH</span>
+                <span className="text-2xl font-bold">{formatEth(lottery.wonkaBarPrice)} XRP</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -288,7 +288,7 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Total Raised</p>
-                    <p className="text-lg font-bold">{formatEth(lottery.totalRaised)} ETH</p>
+                    <p className="text-lg font-bold">{formatEth(lottery.totalRaised)} XRP</p>
                   </div>
                 </div>
               </CardContent>

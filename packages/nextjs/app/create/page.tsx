@@ -16,7 +16,7 @@ const CreatePage: NextPage = () => {
 
         <h1 className="text-4xl font-bold mb-2">Unlock Your NFT&apos;s Liquidity</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Create a lottery for your NFT and receive ETH as participants buy tickets. You keep 95% of all proceeds, with
+          Create a lottery for your NFT and receive XRP as participants buy tickets. You keep 95% of all proceeds, with
           a 5% protocol fee.
         </p>
       </div>

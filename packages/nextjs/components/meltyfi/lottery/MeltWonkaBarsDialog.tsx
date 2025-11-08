@@ -49,7 +49,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
   const refundAmount = lottery.wonkaBarPrice * userBalance;
   const hasBalance = userBalance > 0n;
 
-  // Calculate ChocoChips reward (1000 CHOC per 1 ETH spent)
+  // Calculate ChocoChips reward (1000 CHOC per 1 XRP spent)
   const chocoChipsReward = (refundAmount * BigInt(1000)) / BigInt(10 ** 18);
 
   const handleMelt = async () => {
@@ -69,7 +69,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
         {
           onSuccess: () => {
             const successMsg = isCancelled
-              ? `WonkaBars melted! You'll receive ${formatEth(refundAmount)} ETH + ${chocoChipsReward.toString()} CHOC`
+              ? `WonkaBars melted! You'll receive ${formatEth(refundAmount)} XRP + ${chocoChipsReward.toString()} CHOC`
               : `WonkaBars melted! You'll receive ${chocoChipsReward.toString()} CHOC`;
             toast.success(successMsg);
           },
@@ -130,7 +130,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {isCancelled
-                    ? "Owner repaid the loan. Melt (burn) your WonkaBars to receive ETH refund + ChocoChips."
+                    ? "Owner repaid the loan. Melt (burn) your WonkaBars to receive XRP refund + ChocoChips."
                     : "Sorry, you didn't win. Melt (burn) your WonkaBars to receive ChocoChips as consolation."}
                 </p>
               </div>
@@ -141,7 +141,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div className="space-y-1">
               <p className="text-sm font-medium">{lottery.nftName}</p>
-              <p className="text-xs text-muted-foreground">{formatEth(lottery.wonkaBarPrice)} ETH per ticket</p>
+              <p className="text-xs text-muted-foreground">{formatEth(lottery.wonkaBarPrice)} XRP per ticket</p>
             </div>
             <Badge variant="secondary">{isCancelled ? "Cancelled" : "Concluded"}</Badge>
           </div>
@@ -157,7 +157,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Original Investment</span>
-              <span className="font-medium">{formatEth(refundAmount)} ETH</span>
+              <span className="font-medium">{formatEth(refundAmount)} XRP</span>
             </div>
 
             <Separator />
@@ -170,8 +170,8 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
 
               {isCancelled && (
                 <div className="flex items-center justify-between pl-6">
-                  <span className="text-sm text-muted-foreground">ETH Refund</span>
-                  <span className="font-bold text-green-500">{formatEth(refundAmount)} ETH</span>
+                  <span className="text-sm text-muted-foreground">XRP Refund</span>
+                  <span className="font-bold text-green-500">{formatEth(refundAmount)} XRP</span>
                 </div>
               )}
 
@@ -193,7 +193,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
               <li>
                 Your {userBalance.toString()} WonkaBar{Number(userBalance) !== 1 ? "s" : ""} will be burned (destroyed)
               </li>
-              {isCancelled && <li>You will receive {formatEth(refundAmount)} ETH refunded to your wallet</li>}
+              {isCancelled && <li>You will receive {formatEth(refundAmount)} XRP refunded to your wallet</li>}
               <li>You will receive {chocoChipsReward.toString()} CHOC (ChocoChips) tokens</li>
               <li>This action cannot be undone</li>
             </ul>
@@ -242,7 +242,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
             {loading
               ? "Melting..."
               : isCancelled
-                ? `Melt for ${formatEth(refundAmount)} ETH + CHOC`
+                ? `Melt for ${formatEth(refundAmount)} XRP + CHOC`
                 : `Melt for ${chocoChipsReward.toString()} CHOC`}
           </Button>
         </DialogFooter>

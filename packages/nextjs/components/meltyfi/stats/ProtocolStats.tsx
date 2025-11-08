@@ -26,9 +26,9 @@ export function ProtocolStats() {
     },
     {
       title: "Total Volume",
-      value: isLoading ? "..." : "0 ETH", // TODO: Implement total volume tracking
+      value: isLoading ? "..." : "0 XRP", // TODO: Implement total volume tracking
       icon: TrendingUp,
-      description: "Total ETH transacted",
+      description: "Total XRP transacted",
     },
     {
       title: "Participants",

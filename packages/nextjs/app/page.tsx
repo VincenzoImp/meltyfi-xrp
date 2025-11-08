@@ -37,7 +37,7 @@ const Home: NextPage = () => {
         </h1>
 
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Create lotteries for your NFTs and receive ETH as tickets are sold. Participants buy tickets for a chance to
+          Create lotteries for your NFTs and receive XRP as tickets are sold. Participants buy tickets for a chance to
           win, and you keep 95% of the proceeds.
         </p>
 
@@ -121,7 +121,7 @@ const Home: NextPage = () => {
             </div>
             <h3 className="text-xl font-semibold">Earn as Tickets Sell</h3>
             <p className="text-muted-foreground">
-              As participants buy tickets, you receive 95% of the ETH. Withdraw proceeds anytime during the lottery.
+              As participants buy tickets, you receive 95% of the XRP. Withdraw proceeds anytime during the lottery.
             </p>
           </div>
 
@@ -141,7 +141,7 @@ const Home: NextPage = () => {
       <section className="bg-primary/5 rounded-2xl p-12 text-center">
         <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
         <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Join the MeltyFi protocol and unlock liquidity for your NFTs. Earn ETH as tickets sell with no risk of
+          Join the MeltyFi protocol and unlock liquidity for your NFTs. Earn XRP as tickets sell with no risk of
           liquidation.
         </p>
         <Button size="lg" asChild>

@@ -35,9 +35,9 @@ export function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
     },
     {
       title: "Total Wagered",
-      value: "0 ETH",
+      value: "0 XRP",
       icon: TrendingUp,
-      description: "Lifetime ETH spent on tickets",
+      description: "Lifetime XRP spent on tickets",
       change: null,
     },
     {

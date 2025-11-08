@@ -49,9 +49,9 @@ export function UserStats() {
     },
     {
       title: "Total Wagered",
-      value: "0 ETH", // TODO: Implement total wagered tracking
+      value: "0 XRP", // TODO: Implement total wagered tracking
       icon: Wallet,
-      description: "Lifetime ETH spent on tickets",
+      description: "Lifetime XRP spent on tickets",
     },
   ];
 

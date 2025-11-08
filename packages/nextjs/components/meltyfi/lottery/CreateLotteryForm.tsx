@@ -216,7 +216,7 @@ export function CreateLotteryForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="wonkaBarPrice">Ticket Price (ETH) *</Label>
+            <Label htmlFor="wonkaBarPrice">Ticket Price (XRP) *</Label>
             <Input
               id="wonkaBarPrice"
               type="number"
@@ -294,7 +294,7 @@ export function CreateLotteryForm() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Total Potential</p>
-                <p className="font-bold">{formatEth(totalPotential)} ETH</p>
+                <p className="font-bold">{formatEth(totalPotential)} XRP</p>
               </div>
             </div>
 
@@ -304,7 +304,7 @@ export function CreateLotteryForm() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">You Receive</p>
-                <p className="font-bold">{formatEth(ownerProceeds)} ETH</p>
+                <p className="font-bold">{formatEth(ownerProceeds)} XRP</p>
               </div>
             </div>
 
@@ -314,7 +314,7 @@ export function CreateLotteryForm() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Protocol Fee (5%)</p>
-                <p className="font-bold">{formatEth(protocolFee)} ETH</p>
+                <p className="font-bold">{formatEth(protocolFee)} XRP</p>
               </div>
             </div>
           </div>
@@ -324,7 +324,7 @@ export function CreateLotteryForm() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Ticket Price:</span>
-              <span className="font-medium">{formData.wonkaBarPrice || "0"} ETH</span>
+              <span className="font-medium">{formData.wonkaBarPrice || "0"} XRP</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Max Tickets:</span>

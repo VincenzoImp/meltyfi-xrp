@@ -79,7 +79,7 @@ export function BuyWonkaBarsDialog({ lottery, open, onOpenChange }: BuyWonkaBars
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div className="space-y-1">
               <p className="text-sm font-medium">{lottery.nftName}</p>
-              <p className="text-xs text-muted-foreground">{formatEth(lottery.wonkaBarPrice)} ETH per ticket</p>
+              <p className="text-xs text-muted-foreground">{formatEth(lottery.wonkaBarPrice)} XRP per ticket</p>
             </div>
             <Badge variant="secondary">
               {remaining} / {lottery.wonkaBarsMaxSupply} left
