@@ -53,7 +53,7 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
   const progressPercentage = calculatePercentage(lottery.wonkaBarsSold, lottery.wonkaBarsMaxSupply);
   const isActive = lottery.state === LotteryState.ACTIVE;
   const isCancelled = lottery.state === LotteryState.CANCELLED;
-  const isCompleted = lottery.state === LotteryState.COMPLETED;
+  const isConcluded = lottery.state === LotteryState.CONCLUDED;
   const isSoldOut = lottery.wonkaBarsSold >= lottery.wonkaBarsMaxSupply;
   const isOwner = address && address.toLowerCase() === lottery.owner.toLowerCase();
   const isWinner = address && lottery.winner && address.toLowerCase() === lottery.winner.toLowerCase();
@@ -231,7 +231,7 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
                 )}
 
                 {/* Winner: Claim NFT */}
-                {isWinner && isCompleted && (
+                {isWinner && isConcluded && (
                   <Button
                     className="w-full bg-yellow-500 hover:bg-yellow-600"
                     size="lg"
@@ -323,8 +323,8 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
             </Card>
           </div>
 
-          {/* Winner Card (if completed) */}
-          {lottery.state === LotteryState.COMPLETED && lottery.winner && (
+          {/* Winner Card (if concluded) */}
+          {lottery.state === LotteryState.CONCLUDED && lottery.winner && (
             <Card className="border-primary">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-primary">
@@ -380,7 +380,7 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
                 </div>
               )}
 
-              {lottery.state === LotteryState.COMPLETED && (
+              {lottery.state === LotteryState.CONCLUDED && (
                 <div className="flex items-start gap-3">
                   <div className="mt-1 h-2 w-2 rounded-full bg-green-500" />
                   <div className="flex-1">

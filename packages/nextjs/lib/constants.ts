@@ -21,26 +21,26 @@ export const PROPOSAL_THRESHOLD = 100_000n * 10n ** 18n; // 100,000 CHOC
 export const QUORUM_PERCENTAGE = 4; // 4% of total supply
 export const TIMELOCK_DELAY = 48 * 60 * 60; // 48 hours in seconds
 
-// Lottery States
+// Lottery States - Must match contract enum exactly
 export enum LotteryState {
-  ACTIVE = 0,
-  CANCELLED = 1,
-  ENDED = 2,
-  COMPLETED = 3,
+  ACTIVE = 0, // Lottery accepting purchases
+  CANCELLED = 1, // Owner repaid, participants get refunds
+  CONCLUDED = 2, // Lottery expired/sold out, winner drawn
+  TRASHED = 3, // No sales, NFT returned to owner
 }
 
 export const LOTTERY_STATE_LABELS: Record<LotteryState, string> = {
   [LotteryState.ACTIVE]: "Active",
   [LotteryState.CANCELLED]: "Cancelled",
-  [LotteryState.ENDED]: "Ended",
-  [LotteryState.COMPLETED]: "Completed",
+  [LotteryState.CONCLUDED]: "Concluded",
+  [LotteryState.TRASHED]: "Trashed",
 };
 
 export const LOTTERY_STATE_COLORS: Record<LotteryState, string> = {
   [LotteryState.ACTIVE]: "bg-green-500",
   [LotteryState.CANCELLED]: "bg-gray-500",
-  [LotteryState.ENDED]: "bg-yellow-500",
-  [LotteryState.COMPLETED]: "bg-blue-500",
+  [LotteryState.CONCLUDED]: "bg-blue-500",
+  [LotteryState.TRASHED]: "bg-yellow-500",
 };
 
 // Duration Limits

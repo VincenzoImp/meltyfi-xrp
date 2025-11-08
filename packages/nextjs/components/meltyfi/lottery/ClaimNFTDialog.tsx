@@ -39,7 +39,7 @@ export function ClaimNFTDialog({ lottery, open, onOpenChange }: ClaimNFTDialogPr
 
   if (!lottery) return null;
 
-  const isCompleted = lottery.state === LotteryState.COMPLETED;
+  const isConcluded = lottery.state === LotteryState.CONCLUDED;
   const isWinner = address && lottery.winner && address.toLowerCase() === lottery.winner.toLowerCase();
 
   const handleClaim = async () => {
@@ -154,11 +154,11 @@ export function ClaimNFTDialog({ lottery, open, onOpenChange }: ClaimNFTDialogPr
           )}
 
           {/* Warnings */}
-          {!isCompleted && (
+          {!isConcluded && (
             <div className="p-3 bg-destructive/10 rounded-lg">
               <p className="text-xs text-destructive flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
-                Lottery must be completed before claiming
+                Lottery must be concluded before claiming
               </p>
             </div>
           )}
@@ -188,7 +188,7 @@ export function ClaimNFTDialog({ lottery, open, onOpenChange }: ClaimNFTDialogPr
           </Button>
           <Button
             onClick={handleClaim}
-            disabled={!address || !isCompleted || !isWinner || loading}
+            disabled={!address || !isConcluded || !isWinner || loading}
             className="min-w-[120px] bg-yellow-500 hover:bg-yellow-600"
           >
             {loading ? "Claiming..." : "Claim NFT"}
