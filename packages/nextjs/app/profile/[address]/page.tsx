@@ -12,7 +12,9 @@ import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
 import { Card, CardContent } from "~~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~~/components/ui/tabs";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { formatAddress } from "~~/lib/utils";
+import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 
 interface ProfilePageProps {
   params: Promise<{
@@ -28,6 +30,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const resolvedParams = use(params);
   const profileAddress = resolvedParams.address as `0x${string}`;
   const { address: connectedAddress } = useAccount();
+  const { targetNetwork } = useTargetNetwork();
   const isOwnProfile = connectedAddress?.toLowerCase() === profileAddress.toLowerCase();
 
   const handleCopyAddress = () => {
@@ -64,12 +67,12 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                 </Button>
                 <Button variant="ghost" size="sm" className="h-6 px-2" asChild>
                   <a
-                    href={`https://sepolia.etherscan.io/address/${profileAddress}`}
+                    href={getBlockExplorerAddressLink(targetNetwork, profileAddress)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <ExternalLink className="h-3 w-3 mr-1" />
-                    Etherscan
+                    Block Explorer
                   </a>
                 </Button>
               </div>
