@@ -30,19 +30,19 @@ export function formatNumber(num: number | bigint): string {
 }
 
 /**
- * Format wei to eth with specified decimals
+ * Format wei to XRP with specified decimals
  */
 export function formatEth(wei: bigint, decimals = 4): string {
-  const eth = Number(wei) / 1e18;
-  return eth.toFixed(decimals);
+  const xrp = Number(wei) / 1e18;
+  return xrp.toFixed(decimals);
 }
 
 /**
- * Parse eth string to wei
+ * Parse XRP string to wei
  */
-export function parseEthToWei(eth: string): bigint {
+export function parseEthToWei(xrp: string): bigint {
   try {
-    return BigInt(Math.floor(parseFloat(eth) * 1e18));
+    return BigInt(Math.floor(parseFloat(xrp) * 1e18));
   } catch {
     return 0n;
   }

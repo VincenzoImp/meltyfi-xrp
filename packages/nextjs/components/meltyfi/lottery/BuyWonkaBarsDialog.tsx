@@ -18,7 +18,7 @@ import { Label } from "~~/components/ui/label";
 import { Separator } from "~~/components/ui/separator";
 import { useBuyWonkaBars } from "~~/hooks/meltyfi";
 import { useWonkaBar } from "~~/hooks/meltyfi";
-import { CHOCO_CHIPS_PER_ETH, ERROR_MESSAGES, MAX_USER_BALANCE_PERCENTAGE } from "~~/lib/constants";
+import { ERROR_MESSAGES, MAX_USER_BALANCE_PERCENTAGE } from "~~/lib/constants";
 import { calculatePercentage, formatEth } from "~~/lib/utils";
 import type { Lottery } from "~~/types/lottery";
 
@@ -41,7 +41,9 @@ export function BuyWonkaBarsDialog({ lottery, open, onOpenChange }: BuyWonkaBars
 
   const quantityNum = parseInt(quantity) || 0;
   const totalCost = lottery.wonkaBarPrice * BigInt(quantityNum);
-  const chocoChipsReward = BigInt(quantityNum) * CHOCO_CHIPS_PER_ETH;
+  // NOTE: CHOC rewards are calculated dynamically based on XRP/USD price (10% of USD value)
+  // We cannot display the exact amount without calling the oracle
+  const chocoChipsRewardText = "~10% of XRP USD value";
   const remaining = lottery.wonkaBarsMaxSupply - lottery.wonkaBarsSold;
   const maxPurchase = Math.min(
     remaining,
@@ -122,7 +124,7 @@ export function BuyWonkaBarsDialog({ lottery, open, onOpenChange }: BuyWonkaBars
                 <Ticket className="h-4 w-4" />
                 Total Cost
               </span>
-              <span className="font-medium">{formatEth(totalCost)} ETH</span>
+              <span className="font-medium">{formatEth(totalCost)} XRP</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
@@ -130,7 +132,7 @@ export function BuyWonkaBarsDialog({ lottery, open, onOpenChange }: BuyWonkaBars
                 <Gift className="h-4 w-4" />
                 CHOC Rewards (when melted)
               </span>
-              <span className="font-medium">{chocoChipsReward.toString()} CHOC</span>
+              <span className="font-medium text-xs">{chocoChipsRewardText}</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">

@@ -3,7 +3,6 @@
 import { Clock, Info, TrendingUp, Trophy } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~~/components/ui/card";
 import { useChocoChip } from "~~/hooks/meltyfi";
-import { CHOCO_CHIPS_PER_ETH } from "~~/lib/constants";
 import { formatNumber } from "~~/lib/utils";
 
 interface ChocoChipsTabProps {
@@ -74,7 +73,7 @@ export function ChocoChipsTab({ address, isOwnProfile }: ChocoChipsTabProps) {
               <div>
                 <p className="font-medium text-sm">Purchase WonkaBars</p>
                 <p className="text-xs text-muted-foreground">
-                  Earn {formatNumber(CHOCO_CHIPS_PER_ETH)} CHOC per 1 ETH spent on lottery tickets
+                  Earn CHOC rewards (10% of XRP USD value) when buying lottery tickets
                 </p>
               </div>
             </div>

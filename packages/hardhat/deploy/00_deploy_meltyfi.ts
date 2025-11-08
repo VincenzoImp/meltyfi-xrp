@@ -3,12 +3,12 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { ethers, upgrades } from "hardhat";
 
 /**
- * Deploys the complete MeltyFi protocol using Hardhat Deploy and OpenZeppelin Upgrades
+ * Deploys the complete MeltyFi protocol for XRP EVM using Hardhat Deploy and OpenZeppelin Upgrades
  *
  * Deployment order:
  * 1. ChocoChip (governance token)
  * 2. WonkaBar (lottery tickets)
- * 3. VRFManager (randomness)
+ * 3. PseudoRandomGenerator (on-chain randomness)
  * 4. MeltyTimelock (governance timelock)
  * 5. MeltyFiProtocol (main protocol)
  * 6. MeltyDAO (governance)
@@ -21,17 +21,14 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   const { log } = hre.deployments;
 
   log("========================================");
-  log("Starting MeltyFi Protocol Deployment");
+  log("Starting MeltyFi Protocol Deployment (XRP EVM)");
   log("========================================");
 
-  // VRF Configuration (these should be set based on network)
-  // These are placeholder values - update for production
-  const VRF_COORDINATOR = "0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B"; // Sepolia testnet
-  const VRF_KEY_HASH = "0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae";
-  const VRF_SUBSCRIPTION_ID = 1; // Create subscription on Chainlink
-  const VRF_CALLBACK_GAS_LIMIT = 200000;
-  const VRF_REQUEST_CONFIRMATIONS = 3;
-  const VRF_NUM_WORDS = 1;
+  // Band Protocol Oracle for XRP/USD price feed
+  // Update these addresses based on network
+  // XRP EVM Mainnet: TBD (check Band Protocol docs)
+  // XRP EVM Testnet: TBD
+  const BAND_ORACLE_ADDRESS = "0x0000000000000000000000000000000000000000"; // Update with actual Band Protocol StdReference address
 
   // DAO Treasury (deployer initially, should transfer to multisig later)
   const DAO_TREASURY = deployer;
@@ -56,22 +53,16 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   const wonkaBarAddress = await wonkaBar.getAddress();
   log(`✓ WonkaBar deployed to: ${wonkaBarAddress}`);
 
-  log("\n3. Deploying VRFManager (Chainlink VRF)...");
-  const VRFManager = await ethers.getContractFactory("VRFManager");
-  const vrfConfig = {
-    keyHash: VRF_KEY_HASH,
-    subscriptionId: VRF_SUBSCRIPTION_ID,
-    callbackGasLimit: VRF_CALLBACK_GAS_LIMIT,
-    requestConfirmations: VRF_REQUEST_CONFIRMATIONS,
-    numWords: VRF_NUM_WORDS,
-  };
+  log("\n3. Deploying PseudoRandomGenerator (On-chain RNG)...");
+  const PseudoRandomGenerator = await ethers.getContractFactory("PseudoRandomGenerator");
+  const randomGenerator = await upgrades.deployProxy(PseudoRandomGenerator, [deployer, ethers.ZeroAddress], {
+    initializer: "initialize",
+    kind: "uups",
+  });
+  await randomGenerator.waitForDeployment();
+  const randomGeneratorAddress = await randomGenerator.getAddress();
 
-  // Deploy VRFManager with config in constructor
-  const vrfManager = await VRFManager.deploy(VRF_COORDINATOR, vrfConfig);
-  await vrfManager.waitForDeployment();
-  const vrfManagerAddress = await vrfManager.getAddress();
-
-  log(`✓ VRFManager deployed to: ${vrfManagerAddress}`);
+  log(`✓ PseudoRandomGenerator deployed to: ${randomGeneratorAddress}`);
 
   log("\n4. Deploying MeltyTimelock (Governance Timelock)...");
   const MeltyTimelock = await ethers.getContractFactory("MeltyTimelock");
@@ -98,7 +89,7 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   const MeltyFiProtocol = await ethers.getContractFactory("MeltyFiProtocol");
   const protocol = await upgrades.deployProxy(
     MeltyFiProtocol,
-    [deployer, chocoChipAddress, wonkaBarAddress, vrfManagerAddress, DAO_TREASURY],
+    [deployer, chocoChipAddress, wonkaBarAddress, randomGeneratorAddress, BAND_ORACLE_ADDRESS, DAO_TREASURY],
     {
       initializer: "initialize",
       kind: "uups",
@@ -128,9 +119,9 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   log("   - Setting MeltyFiProtocol in WonkaBar...");
   await wonkaBar.setMeltyFiProtocol(protocolAddress);
 
-  // Set MeltyFiProtocol address in VRFManager
-  log("   - Setting MeltyFiProtocol in VRFManager...");
-  await vrfManager.setMeltyFiProtocol(protocolAddress);
+  // Update MeltyFiProtocol address in PseudoRandomGenerator
+  log("   - Setting MeltyFiProtocol in PseudoRandomGenerator...");
+  await randomGenerator.updateMeltyFiProtocol(protocolAddress);
 
   // Grant timelock roles to DAO
   log("   - Granting DAO proposer/executor roles...");
@@ -144,7 +135,7 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   await chocoChip.transferOwnership(timelockAddress);
   await wonkaBar.transferOwnership(timelockAddress);
   await protocol.transferOwnership(timelockAddress);
-  // VRFManager uses Chainlink's ownership (not transferred)
+  await randomGenerator.transferOwnership(timelockAddress);
   // DAO is already owned by timelock (set in initialize)
   log("   ✓ Ownership transferred successfully");
 
@@ -152,28 +143,30 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   log("MeltyFi Protocol Deployment Complete!");
   log("========================================");
   log("\nDeployed Contracts:");
-  log(`  ChocoChip:         ${chocoChipAddress}`);
-  log(`  WonkaBar:          ${wonkaBarAddress}`);
-  log(`  VRFManager:        ${vrfManagerAddress}`);
-  log(`  MeltyTimelock:     ${timelockAddress}`);
-  log(`  MeltyFiProtocol:   ${protocolAddress}`);
-  log(`  MeltyDAO:          ${daoAddress}`);
+  log(`  ChocoChip:              ${chocoChipAddress}`);
+  log(`  WonkaBar:               ${wonkaBarAddress}`);
+  log(`  PseudoRandomGenerator:  ${randomGeneratorAddress}`);
+  log(`  MeltyTimelock:          ${timelockAddress}`);
+  log(`  MeltyFiProtocol:        ${protocolAddress}`);
+  log(`  MeltyDAO:               ${daoAddress}`);
   log("\nNext Steps:");
-  log("  1. Fund VRF subscription with LINK tokens");
-  log("  2. Add VRFManager as consumer to VRF subscription");
-  log("  3. Update DAO treasury address if needed");
-  log("  4. Deploy frontend and configure contract addresses");
-  log("  5. Run comprehensive tests");
+  log("  1. Verify Band Protocol oracle address (currently: ${BAND_ORACLE_ADDRESS})");
+  log("  2. Update DAO treasury address if needed");
+  log("  3. Deploy frontend and configure contract addresses");
+  log("  4. Run comprehensive tests");
+  log("  5. Note: Using pseudo-random generation (not cryptographically secure)");
   log("========================================\n");
 
   // Save deployment info for frontend
   const deploymentInfo = {
     network: hre.network.name,
     timestamp: new Date().toISOString(),
+    blockchain: "XRP EVM",
     contracts: {
       ChocoChip: chocoChipAddress,
       WonkaBar: wonkaBarAddress,
-      VRFManager: vrfManagerAddress,
+      PseudoRandomGenerator: randomGeneratorAddress,
+      BandOracle: BAND_ORACLE_ADDRESS,
       MeltyTimelock: timelockAddress,
       MeltyFiProtocol: protocolAddress,
       MeltyDAO: daoAddress,
@@ -183,7 +176,7 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
       maxWonkaBars: 100,
       minWonkaBars: 5,
       maxBalance: "25%",
-      chocoChipsPerEther: "1000",
+      chocoChipsRewardPercentage: "10% of XRP USD value",
       votingDelay: "1 block",
       votingPeriod: "50,400 blocks (~7 days)",
       proposalThreshold: "100,000 CHOC",

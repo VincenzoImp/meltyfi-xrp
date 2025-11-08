@@ -12,19 +12,21 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import "./ChocoChip.sol";
 import "./WonkaBar.sol";
-import "./VRFManager.sol";
+import "./PseudoRandomGenerator.sol";
+import "./interfaces/IStdReference.sol";
 
 /**
  * @title MeltyFiProtocol
- * @notice Main protocol contract for MeltyFi NFT liquidity lotteries
+ * @notice Main protocol contract for MeltyFi NFT liquidity lotteries on XRP EVM
  * @dev Manages lottery lifecycle: creation, participation, resolution, and rewards
  *
  * Key Features:
- * - NFT owners create lotteries and receive 95% instant liquidity
+ * - NFT owners create lotteries and receive 95% as XRP tickets sell
  * - Participants buy WonkaBar tickets for chance to win NFTs
- * - All participants earn ChocoChip governance tokens
- * - VRF-based fair winner selection
+ * - All participants earn ChocoChip governance tokens (10% of XRP USD value)
+ * - Pseudo-random winner selection (simple RNG without oracles)
  * - Repayment option for NFT owners
+ * - Band Protocol price oracle for XRP/USD pricing
  * - Upgradeable via UUPS pattern
  */
 contract MeltyFiProtocol is
@@ -76,8 +78,11 @@ contract MeltyFiProtocol is
     /// @notice WonkaBar lottery ticket token
     WonkaBar public wonkaBarToken;
 
-    /// @notice VRF Manager for randomness
-    VRFManager public vrfManager;
+    /// @notice Pseudo Random Generator for winner selection
+    PseudoRandomGenerator public randomGenerator;
+
+    /// @notice Band Protocol StdReference oracle for XRP/USD price
+    IStdReference public priceOracle;
 
     /// @notice DAO treasury address
     address public daoTreasury;
@@ -94,8 +99,9 @@ contract MeltyFiProtocol is
     /// @notice Maximum balance percentage per user (in basis points, 2500 = 25%)
     uint256 public maxBalancePercentage;
 
-    /// @notice ChocoChips earned per ether spent (1000 CHOC per 1 ETH)
-    uint256 public chocoChipsPerEther;
+    /// @notice ChocoChips reward percentage of XRP USD value (1000 = 10%)
+    /// @dev 10% of the USD value of XRP spent
+    uint256 public chocoChipsRewardPercentage;
 
     /// @notice Total lotteries created
     uint256 public totalLotteriesCreated;
@@ -158,7 +164,7 @@ contract MeltyFiProtocol is
         uint256 indexed lotteryId,
         address indexed user,
         uint256 amount,
-        uint256 ethRefunded,
+        uint256 xrpRefunded,
         uint256 chocoChipsEarned,
         bool wonNFT
     );
@@ -199,20 +205,23 @@ contract MeltyFiProtocol is
      * @param initialOwner Address of initial owner (DAO/timelock)
      * @param _chocoChipToken ChocoChip token address
      * @param _wonkaBarToken WonkaBar token address
-     * @param _vrfManager VRF Manager address
+     * @param _randomGenerator Pseudo Random Generator address
+     * @param _priceOracle Band Protocol StdReference oracle address
      * @param _daoTreasury DAO treasury address
      */
     function initialize(
         address initialOwner,
         address _chocoChipToken,
         address _wonkaBarToken,
-        address _vrfManager,
+        address _randomGenerator,
+        address _priceOracle,
         address _daoTreasury
     ) external initializer {
         if (initialOwner == address(0)) revert ZeroAddress();
         if (_chocoChipToken == address(0)) revert ZeroAddress();
         if (_wonkaBarToken == address(0)) revert ZeroAddress();
-        if (_vrfManager == address(0)) revert ZeroAddress();
+        if (_randomGenerator == address(0)) revert ZeroAddress();
+        if (_priceOracle == address(0)) revert ZeroAddress();
         if (_daoTreasury == address(0)) revert ZeroAddress();
 
         __Ownable_init(initialOwner);
@@ -223,7 +232,8 @@ contract MeltyFiProtocol is
 
         chocoChipToken = ChocoChip(_chocoChipToken);
         wonkaBarToken = WonkaBar(_wonkaBarToken);
-        vrfManager = VRFManager(_vrfManager);
+        randomGenerator = PseudoRandomGenerator(_randomGenerator);
+        priceOracle = IStdReference(_priceOracle);
         daoTreasury = _daoTreasury;
 
         // Set default parameters
@@ -231,7 +241,7 @@ contract MeltyFiProtocol is
         maxWonkaBarsPerLottery = 100;
         minWonkaBarsPerLottery = 5;
         maxBalancePercentage = 2500; // 25%
-        chocoChipsPerEther = 1000 * 10**18; // 1000 CHOC per 1 ETH
+        chocoChipsRewardPercentage = 1000; // 10% of USD value
     }
 
     // ============ External Functions ============
@@ -343,11 +353,11 @@ contract MeltyFiProtocol is
             participantLotteries[msg.sender].add(lotteryId);
         }
 
-        // Calculate ChocoChip rewards
-        uint256 chocoChipsEarned = (msg.value * chocoChipsPerEther) / 1 ether;
+        // Calculate ChocoChip rewards based on XRP USD value (10% of USD value)
+        uint256 chocoChipsEarned = _calculateChocoChipRewards(msg.value);
 
         // Interactions
-        // Transfer ETH
+        // Transfer XRP
         (bool ownerSuccess, ) = payable(lottery.owner).call{value: ownerAmount}("");
         if (!ownerSuccess) revert TransferFailed();
 
@@ -379,21 +389,21 @@ contract MeltyFiProtocol is
         lottery.state = LotteryState.CANCELLED;
         activeLotteryIds.remove(lotteryId);
 
-        // Mint ChocoChips to owner as reward
-        uint256 chocoChipsEarned = (msg.value * chocoChipsPerEther) / 1 ether;
+        // Mint ChocoChips to owner as reward based on XRP USD value
+        uint256 chocoChipsEarned = _calculateChocoChipRewards(msg.value);
         chocoChipToken.mint(msg.sender, chocoChipsEarned);
 
         // Interactions
         // Return NFT to owner
         IERC721(lottery.nftContract).transferFrom(address(this), msg.sender, lottery.nftTokenId);
 
-        // ETH is held in contract for participant refunds via meltWonkaBars
+        // XRP is held in contract for participant refunds via meltWonkaBars
 
         emit LoanRepaid(lotteryId, msg.sender, msg.value);
     }
 
     /**
-     * @notice Conclude lottery and draw winner via VRF
+     * @notice Conclude lottery and draw winner via pseudo-random generation
      * @param lotteryId ID of lottery to conclude
      */
     function drawWinner(uint256 lotteryId) external whenNotPaused {
@@ -419,22 +429,23 @@ contract MeltyFiProtocol is
             return;
         }
 
-        // Request VRF randomness for winner selection
-        uint256 requestId = vrfManager.requestRandomWords(lotteryId);
+        // Request pseudo-random number for winner selection
+        // Note: This calls back synchronously, unlike VRF
+        uint256 requestId = randomGenerator.requestRandomWords(lotteryId);
         lottery.vrfRequestId = requestId;
         vrfRequestToLottery[requestId] = lotteryId;
 
-        // State will be updated to CONCLUDED in processVRFCallback
+        // State will be updated to CONCLUDED in processVRFCallback (called synchronously)
     }
 
     /**
-     * @notice Process VRF callback with random number
+     * @notice Process callback with pseudo-random number
      * @param lotteryId Lottery ID
-     * @param randomWord Random number from VRF
-     * @dev Called by VRFManager contract
+     * @param randomWord Random number from PseudoRandomGenerator
+     * @dev Called by PseudoRandomGenerator contract
      */
     function processVRFCallback(uint256 lotteryId, uint256 randomWord) external {
-        if (msg.sender != address(vrfManager)) revert ZeroAddress();
+        if (msg.sender != address(randomGenerator)) revert ZeroAddress();
 
         Lottery storage lottery = lotteries[lotteryId];
 
@@ -461,15 +472,15 @@ contract MeltyFiProtocol is
         if (lottery.state == LotteryState.ACTIVE) revert LotteryStillActive();
         if (wonkaBarToken.balanceOf(msg.sender, lotteryId) < amount) revert NoWonkaBarsToBurn();
 
-        uint256 ethRefund = 0;
+        uint256 xrpRefund = 0;
         uint256 chocoChipsEarned = 0;
         bool wonNFT = false;
 
         // Calculate rewards based on lottery state
         if (lottery.state == LotteryState.CANCELLED) {
-            // Refund ETH + ChocoChips
-            ethRefund = (lottery.wonkaBarPrice * amount);
-            chocoChipsEarned = (ethRefund * chocoChipsPerEther) / 1 ether;
+            // Refund XRP + ChocoChips (based on XRP USD value)
+            xrpRefund = (lottery.wonkaBarPrice * amount);
+            chocoChipsEarned = _calculateChocoChipRewards(xrpRefund);
         } else if (lottery.state == LotteryState.CONCLUDED) {
             // Winner gets NFT, all get ChocoChips
             if (lottery.winner == msg.sender && amount > 0) {
@@ -478,9 +489,9 @@ contract MeltyFiProtocol is
                 IERC721(lottery.nftContract).transferFrom(address(this), msg.sender, lottery.nftTokenId);
                 lottery.winner = address(0); // Prevent double claim
             }
-            // All participants get ChocoChips
+            // All participants get ChocoChips based on XRP USD value
             uint256 spentAmount = lottery.wonkaBarPrice * amount;
-            chocoChipsEarned = (spentAmount * chocoChipsPerEther) / 1 ether;
+            chocoChipsEarned = _calculateChocoChipRewards(spentAmount);
         }
 
         // Burn WonkaBar tokens
@@ -491,13 +502,13 @@ contract MeltyFiProtocol is
             chocoChipToken.mint(msg.sender, chocoChipsEarned);
         }
 
-        // Send ETH refund if applicable
-        if (ethRefund > 0) {
-            (bool success, ) = payable(msg.sender).call{value: ethRefund}("");
+        // Send XRP refund if applicable
+        if (xrpRefund > 0) {
+            (bool success, ) = payable(msg.sender).call{value: xrpRefund}("");
             if (!success) revert TransferFailed();
         }
 
-        emit WonkaBarsMelted(lotteryId, msg.sender, amount, ethRefund, chocoChipsEarned, wonNFT);
+        emit WonkaBarsMelted(lotteryId, msg.sender, amount, xrpRefund, chocoChipsEarned, wonNFT);
     }
 
     // ============ View Functions ============
@@ -623,13 +634,13 @@ contract MeltyFiProtocol is
     }
 
     /**
-     * @notice Set ChocoChips per ether rate
-     * @param newRate New rate
+     * @notice Set ChocoChips reward percentage (10% = 1000 basis points)
+     * @param newPercentage New percentage in basis points
      */
-    function setChocoChipsPerEther(uint256 newRate) external onlyOwner {
-        uint256 oldRate = chocoChipsPerEther;
-        chocoChipsPerEther = newRate;
-        emit ProtocolParameterUpdated("chocoChipsPerEther", oldRate, newRate);
+    function setChocoChipsRewardPercentage(uint256 newPercentage) external onlyOwner {
+        uint256 oldPercentage = chocoChipsRewardPercentage;
+        chocoChipsRewardPercentage = newPercentage;
+        emit ProtocolParameterUpdated("chocoChipsRewardPercentage", oldPercentage, newPercentage);
     }
 
     /**
@@ -666,9 +677,31 @@ contract MeltyFiProtocol is
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     /**
+     * @notice Calculate ChocoChip rewards based on XRP USD value
+     * @param xrpAmount Amount of XRP (in wei) spent
+     * @return chocoChipsAmount Amount of CHOC tokens to mint (10% of USD value)
+     * @dev Formula: (XRP amount * XRP/USD price * 10%) / 1e18
+     * Example: 10 XRP @ $2.50 = $25 USD -> 2.5 CHOC (with 18 decimals)
+     */
+    function _calculateChocoChipRewards(uint256 xrpAmount) internal view returns (uint256 chocoChipsAmount) {
+        // Get XRP/USD price from Band Protocol oracle
+        // Returns rate with 18 decimals (e.g., 2.5 USD = 2500000000000000000)
+        IStdReference.ReferenceData memory data = priceOracle.getReferenceData("XRP", "USD");
+
+        // Calculate USD value: (xrpAmount * xrpPrice) / 1e18
+        uint256 usdValue = (xrpAmount * data.rate) / 1e18;
+
+        // Calculate CHOC rewards: 10% of USD value
+        // chocoChipsRewardPercentage = 1000 (10% in basis points)
+        chocoChipsAmount = (usdValue * chocoChipsRewardPercentage) / BASIS_POINTS;
+
+        return chocoChipsAmount;
+    }
+
+    /**
      * @notice Select winner based on proportional WonkaBar ownership
      * @param lotteryId Lottery ID
-     * @param randomWord Random number from VRF
+     * @param randomWord Random number from pseudo-RNG
      * @return winner Address of winner
      */
     function selectWinner(uint256 lotteryId, uint256 randomWord) internal view returns (address winner) {
