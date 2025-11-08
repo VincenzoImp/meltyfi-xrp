@@ -33,12 +33,12 @@ const Home: NextPage = () => {
 
         <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
           Unlock Your NFT&apos;s
-          <span className="block text-primary mt-2">Instant Liquidity</span>
+          <span className="block text-primary mt-2">Liquidity Potential</span>
         </h1>
 
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Create lotteries for your NFTs and get instant liquidity. Participants buy tickets for a chance to win, and
-          you keep the proceeds minus a small fee.
+          Create lotteries for your NFTs and receive ETH as tickets are sold. Participants buy tickets for a chance to
+          win, and you keep 95% of the proceeds.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
@@ -119,9 +119,9 @@ const Home: NextPage = () => {
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
               <span className="text-2xl font-bold text-primary">2</span>
             </div>
-            <h3 className="text-xl font-semibold">Get Instant Liquidity</h3>
+            <h3 className="text-xl font-semibold">Earn as Tickets Sell</h3>
             <p className="text-muted-foreground">
-              As participants buy tickets, you receive ETH immediately. Keep 95% of all proceeds.
+              As participants buy tickets, you receive 95% of the ETH. Withdraw proceeds anytime during the lottery.
             </p>
           </div>
 
@@ -141,7 +141,8 @@ const Home: NextPage = () => {
       <section className="bg-primary/5 rounded-2xl p-12 text-center">
         <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
         <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Join the MeltyFi protocol and unlock instant liquidity for your NFTs. No waiting, no hassle, just instant ETH.
+          Join the MeltyFi protocol and unlock liquidity for your NFTs. Earn ETH as tickets sell with no risk of
+          liquidation.
         </p>
         <Button size="lg" asChild>
           <Link href="/create">
