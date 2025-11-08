@@ -16,7 +16,7 @@ import {
 import { Separator } from "~~/components/ui/separator";
 import { useWonkaBar } from "~~/hooks/meltyfi";
 import { ERROR_MESSAGES, LotteryState } from "~~/lib/constants";
-import { ABIS, getContracts } from "~~/lib/contracts";
+import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 import { formatEth } from "~~/lib/utils";
 import type { Lottery } from "~~/types/lottery";
 
@@ -33,8 +33,7 @@ interface MeltWonkaBarsDialogProps {
 export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBarsDialogProps) {
   const { address } = useAccount();
   const chainId = useChainId();
-  const networkName = chainId === 31337 ? "localhost" : "sepolia";
-  const contracts = getContracts(networkName);
+  const contracts = getContractsByChainId(chainId);
 
   const { balance: userBalance } = useWonkaBar(address as `0x${string}` | undefined, lottery?.id);
   const { writeContract, data: hash, isPending } = useWriteContract();

@@ -15,7 +15,7 @@ import {
 } from "~~/components/ui/dialog";
 import { Separator } from "~~/components/ui/separator";
 import { ERROR_MESSAGES, LotteryState, SUCCESS_MESSAGES } from "~~/lib/constants";
-import { ABIS, getContracts } from "~~/lib/contracts";
+import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 import { formatAddress } from "~~/lib/utils";
 import type { Lottery } from "~~/types/lottery";
 
@@ -31,8 +31,7 @@ interface ClaimNFTDialogProps {
 export function ClaimNFTDialog({ lottery, open, onOpenChange }: ClaimNFTDialogProps) {
   const { address } = useAccount();
   const chainId = useChainId();
-  const networkName = chainId === 31337 ? "localhost" : "sepolia";
-  const contracts = getContracts(networkName);
+  const contracts = getContractsByChainId(chainId);
 
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });

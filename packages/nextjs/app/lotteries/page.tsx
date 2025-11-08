@@ -1,17 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Filter, Search, SlidersHorizontal } from "lucide-react";
 import type { NextPage } from "next";
+import { useChainId, useReadContracts } from "wagmi";
 import { BuyWonkaBarsDialog, LotteryGrid } from "~~/components/meltyfi";
 import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
 import { Input } from "~~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~~/components/ui/select";
-import { useLotteries, useLottery } from "~~/hooks/meltyfi";
+import { useLotteries } from "~~/hooks/meltyfi";
+import { LotteryState } from "~~/lib/constants";
+import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 import type { Lottery } from "~~/types/lottery";
 
 const LotteriesPage: NextPage = () => {
+  const chainId = useChainId();
+  const contracts = getContractsByChainId(chainId);
+
   const { lotteryIds, isLoading } = useLotteries();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
@@ -19,14 +25,50 @@ const LotteriesPage: NextPage = () => {
   const [selectedLottery, setSelectedLottery] = useState<Lottery | null>(null);
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
 
-  // Fetch all lotteries
-  const lotteries = lotteryIds
-    .map(id => {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const { lottery } = useLottery(Number(id));
-      return lottery;
-    })
-    .filter((lottery): lottery is NonNullable<typeof lottery> => lottery !== null);
+  // Fetch all lotteries using useReadContracts (batch call)
+  const lotteryContracts = lotteryIds.map(id => ({
+    address: contracts.MeltyFiProtocol,
+    abi: ABIS.MeltyFiProtocol as any,
+    functionName: "getLottery" as const,
+    args: [id] as const,
+  }));
+
+  const { data: lotteriesData, isLoading: isLoadingLotteries } = useReadContracts({
+    contracts: lotteryContracts as any,
+  });
+
+  // Transform contract data to Lottery type
+  const [lotteries, setLotteries] = useState<Lottery[]>([]);
+
+  useEffect(() => {
+    if (lotteriesData) {
+      const transformedLotteries = lotteriesData
+        .map((result, index) => {
+          if (result.status === "success" && result.result) {
+            const data = result.result as any;
+            return {
+              id: Number(lotteryIds[index]),
+              owner: data.owner,
+              nftContract: data.nftContract,
+              nftTokenId: data.nftTokenId,
+              nftName: data.nftName,
+              nftImageUrl: data.nftImageUrl,
+              wonkaBarPrice: data.wonkaBarPrice,
+              wonkaBarsMaxSupply: Number(data.wonkaBarsMaxSupply),
+              wonkaBarsSold: Number(data.wonkaBarsSold),
+              totalRaised: data.totalRaised,
+              state: Number(data.state) as LotteryState,
+              expirationDate: new Date(Number(data.expirationDate) * 1000),
+              winner: data.winner !== "0x0000000000000000000000000000000000000000" ? data.winner : undefined,
+            } as Lottery;
+          }
+          return null;
+        })
+        .filter((lottery): lottery is Lottery => lottery !== null);
+
+      setLotteries(transformedLotteries);
+    }
+  }, [lotteriesData, lotteryIds]);
 
   // Filter lotteries
   const filteredLotteries = lotteries.filter(lottery => {
@@ -171,7 +213,7 @@ const LotteriesPage: NextPage = () => {
         {/* Lottery Grid */}
         <LotteryGrid
           lotteries={sortedLotteries}
-          isLoading={isLoading}
+          isLoading={isLoading || isLoadingLotteries}
           onBuyClick={handleBuyClick}
           emptyMessage={searchQuery || filterState !== "all" ? "No lotteries match your filters" : "No lotteries found"}
         />
