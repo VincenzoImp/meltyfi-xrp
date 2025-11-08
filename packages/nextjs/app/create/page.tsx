@@ -31,7 +31,7 @@ const CreatePage: NextPage = () => {
           <li>You must own the NFT in your connected wallet</li>
           <li>The NFT will be locked in the protocol until the lottery ends</li>
           <li>You can repay participants if needed before the lottery ends</li>
-          <li>Winners are selected randomly via Chainlink VRF</li>
+          <li>Winners are selected randomly</li>
         </ul>
       </div>
     </div>

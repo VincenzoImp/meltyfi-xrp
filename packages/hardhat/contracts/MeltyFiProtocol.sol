@@ -358,10 +358,10 @@ contract MeltyFiProtocol is
 
         // Interactions
         // Transfer XRP
-        (bool ownerSuccess, ) = payable(lottery.owner).call{value: ownerAmount}("");
+        (bool ownerSuccess, ) = payable(lottery.owner).call{ value: ownerAmount }("");
         if (!ownerSuccess) revert TransferFailed();
 
-        (bool daoSuccess, ) = payable(daoTreasury).call{value: feeAmount}("");
+        (bool daoSuccess, ) = payable(daoTreasury).call{ value: feeAmount }("");
         if (!daoSuccess) revert TransferFailed();
 
         // Mint WonkaBar tokens
@@ -504,7 +504,7 @@ contract MeltyFiProtocol is
 
         // Send XRP refund if applicable
         if (xrpRefund > 0) {
-            (bool success, ) = payable(msg.sender).call{value: xrpRefund}("");
+            (bool success, ) = payable(msg.sender).call{ value: xrpRefund }("");
             if (!success) revert TransferFailed();
         }
 
@@ -581,12 +581,7 @@ contract MeltyFiProtocol is
     function getProtocolStats()
         external
         view
-        returns (
-            uint256 totalLotteries,
-            uint256 activeLotteries,
-            uint256 tvl,
-            uint256 feesCollected
-        )
+        returns (uint256 totalLotteries, uint256 activeLotteries, uint256 tvl, uint256 feesCollected)
     {
         return (totalLotteriesCreated, activeLotteryIds.length(), totalValueLocked, totalFeesCollected);
     }

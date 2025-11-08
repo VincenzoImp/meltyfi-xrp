@@ -45,7 +45,7 @@ contract MeltyDAO is
     uint32 private constant VOTING_PERIOD = 50_400;
 
     /// @notice Proposal threshold (100,000 CHOC tokens)
-    uint256 private constant PROPOSAL_THRESHOLD = 100_000 * 10**18;
+    uint256 private constant PROPOSAL_THRESHOLD = 100_000 * 10 ** 18;
 
     /// @notice Quorum percentage (4% of total supply)
     uint256 private constant QUORUM_PERCENTAGE = 4;
@@ -63,11 +63,7 @@ contract MeltyDAO is
      * @param timelock Address of TimelockController
      * @param initialOwner Address of initial owner (for upgrades)
      */
-    function initialize(
-        address chocoChipToken,
-        address timelock,
-        address initialOwner
-    ) external initializer {
+    function initialize(address chocoChipToken, address timelock, address initialOwner) external initializer {
         require(chocoChipToken != address(0), "Invalid token address");
         require(timelock != address(0), "Invalid timelock address");
         require(initialOwner != address(0), "Invalid owner address");
@@ -87,60 +83,41 @@ contract MeltyDAO is
     /**
      * @notice Get voting delay
      */
-    function votingDelay()
-        public
-        view
-        override(GovernorUpgradeable, GovernorSettingsUpgradeable)
-        returns (uint256)
-    {
+    function votingDelay() public view override(GovernorUpgradeable, GovernorSettingsUpgradeable) returns (uint256) {
         return super.votingDelay();
     }
 
     /**
      * @notice Get voting period
      */
-    function votingPeriod()
-        public
-        view
-        override(GovernorUpgradeable, GovernorSettingsUpgradeable)
-        returns (uint256)
-    {
+    function votingPeriod() public view override(GovernorUpgradeable, GovernorSettingsUpgradeable) returns (uint256) {
         return super.votingPeriod();
     }
 
     /**
      * @notice Get quorum for a specific block
      */
-    function quorum(uint256 blockNumber)
-        public
-        view
-        override(GovernorUpgradeable, GovernorVotesQuorumFractionUpgradeable)
-        returns (uint256)
-    {
+    function quorum(
+        uint256 blockNumber
+    ) public view override(GovernorUpgradeable, GovernorVotesQuorumFractionUpgradeable) returns (uint256) {
         return super.quorum(blockNumber);
     }
 
     /**
      * @notice Get proposal state
      */
-    function state(uint256 proposalId)
-        public
-        view
-        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
-        returns (ProposalState)
-    {
+    function state(
+        uint256 proposalId
+    ) public view override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (ProposalState) {
         return super.state(proposalId);
     }
 
     /**
      * @notice Check if proposal needs queuing
      */
-    function proposalNeedsQueuing(uint256 proposalId)
-        public
-        view
-        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
-        returns (bool)
-    {
+    function proposalNeedsQueuing(
+        uint256 proposalId
+    ) public view override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (bool) {
         return super.proposalNeedsQueuing(proposalId);
     }
 

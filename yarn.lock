@@ -2905,6 +2905,117 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@meltyfi/hardhat@workspace:packages/hardhat":
+  version: 0.0.0-use.local
+  resolution: "@meltyfi/hardhat@workspace:packages/hardhat"
+  dependencies:
+    "@chainlink/contracts": ^1.2.0
+    "@ethersproject/abi": ~5.7.0
+    "@ethersproject/providers": ~5.7.2
+    "@inquirer/password": ^4.0.2
+    "@nomicfoundation/hardhat-chai-matchers": ~2.0.7
+    "@nomicfoundation/hardhat-ethers": ~3.0.8
+    "@nomicfoundation/hardhat-network-helpers": ~1.0.11
+    "@nomicfoundation/hardhat-verify": ~2.0.10
+    "@openzeppelin/contracts": ~5.0.2
+    "@openzeppelin/contracts-upgradeable": ~5.0.2
+    "@openzeppelin/hardhat-upgrades": ^3.5.0
+    "@typechain/ethers-v5": ~11.1.2
+    "@typechain/ethers-v6": ~0.5.1
+    "@typechain/hardhat": ~9.1.0
+    "@types/eslint": ~9.6.1
+    "@types/mocha": ~10.0.10
+    "@types/prettier": ~3.0.0
+    "@types/qrcode": ~1.5.5
+    "@typescript-eslint/eslint-plugin": ~8.27.0
+    "@typescript-eslint/parser": ~8.27.0
+    chai: ~4.5.0
+    dotenv: ~16.4.5
+    envfile: ~7.1.0
+    eslint: ~9.23.0
+    eslint-config-prettier: ~10.1.1
+    eslint-plugin-prettier: ~5.2.4
+    ethers: ~6.13.2
+    hardhat: ~2.22.10
+    hardhat-deploy: ^1.0.4
+    hardhat-deploy-ethers: ~0.4.2
+    hardhat-gas-reporter: ~2.2.1
+    prettier: ^3.5.3
+    prettier-plugin-solidity: ~1.4.1
+    qrcode: ~1.5.4
+    solidity-coverage: ~0.8.13
+    ts-node: ~10.9.1
+    typechain: ~8.3.2
+    typescript: ^5.8.2
+  languageName: unknown
+  linkType: soft
+
+"@meltyfi/nextjs@workspace:packages/nextjs":
+  version: 0.0.0-use.local
+  resolution: "@meltyfi/nextjs@workspace:packages/nextjs"
+  dependencies:
+    "@heroicons/react": ~2.1.5
+    "@hookform/resolvers": ^5.2.2
+    "@radix-ui/react-avatar": ^1.1.11
+    "@radix-ui/react-dialog": ^1.1.15
+    "@radix-ui/react-dropdown-menu": ^2.1.16
+    "@radix-ui/react-icons": ^1.3.2
+    "@radix-ui/react-label": ^2.1.8
+    "@radix-ui/react-progress": ^1.1.8
+    "@radix-ui/react-select": ^2.2.6
+    "@radix-ui/react-separator": ^1.1.8
+    "@radix-ui/react-slot": ^1.2.4
+    "@radix-ui/react-tabs": ^1.1.13
+    "@radix-ui/react-toast": ^1.2.15
+    "@rainbow-me/rainbowkit": 2.2.8
+    "@scaffold-ui/components": ^0.1.3
+    "@scaffold-ui/debug-contracts": ^0.1.2
+    "@scaffold-ui/hooks": ^0.1.2
+    "@tailwindcss/postcss": 4.0.15
+    "@tanstack/react-query": ~5.59.15
+    "@trivago/prettier-plugin-sort-imports": ~4.3.0
+    "@types/node": ~18.19.50
+    "@types/react": ~19.0.7
+    abitype: 1.0.6
+    autoprefixer: ~10.4.20
+    bgipfs: ~0.0.12
+    blo: ~1.2.0
+    burner-connector: 0.0.18
+    class-variance-authority: ^0.7.1
+    clsx: ^2.1.1
+    daisyui: 5.0.9
+    date-fns: ^4.1.0
+    eslint: ~9.23.0
+    eslint-config-next: ~15.2.3
+    eslint-config-prettier: ~10.1.1
+    eslint-plugin-prettier: ~5.2.4
+    kubo-rpc-client: ~5.0.2
+    lucide-react: ^0.553.0
+    next: ~15.2.3
+    next-nprogress-bar: ~2.3.13
+    next-themes: ~0.3.0
+    postcss: ~8.4.45
+    prettier: ~3.5.3
+    qrcode.react: ~4.0.1
+    react: ~19.0.0
+    react-dom: ~19.0.0
+    react-hook-form: ^7.66.0
+    react-hot-toast: ~2.4.0
+    recharts: ^3.3.0
+    sonner: ^2.0.7
+    tailwind-merge: ^3.3.1
+    tailwindcss: 4.1.3
+    type-fest: ~4.26.1
+    typescript: ~5.8.2
+    usehooks-ts: ~3.1.0
+    vercel: ~39.1.3
+    viem: 2.34.0
+    wagmi: 2.16.4
+    zod: ^4.1.12
+    zustand: ~5.0.0
+  languageName: unknown
+  linkType: soft
+
 "@metamask/eth-json-rpc-provider@npm:^1.0.0":
   version: 1.0.1
   resolution: "@metamask/eth-json-rpc-provider@npm:1.0.1"
@@ -5458,117 +5569,6 @@ __metadata:
   checksum: 96d46420780473d6c6c9700254a0eceec60302f61d7f9d7f29024e90c7acff3e8e40a5ee52dfaf104db539a10462e531996aaf9e69f082b8540b0a25870545fc
   languageName: node
   linkType: hard
-
-"@se-2/hardhat@workspace:packages/hardhat":
-  version: 0.0.0-use.local
-  resolution: "@se-2/hardhat@workspace:packages/hardhat"
-  dependencies:
-    "@chainlink/contracts": ^1.2.0
-    "@ethersproject/abi": ~5.7.0
-    "@ethersproject/providers": ~5.7.2
-    "@inquirer/password": ^4.0.2
-    "@nomicfoundation/hardhat-chai-matchers": ~2.0.7
-    "@nomicfoundation/hardhat-ethers": ~3.0.8
-    "@nomicfoundation/hardhat-network-helpers": ~1.0.11
-    "@nomicfoundation/hardhat-verify": ~2.0.10
-    "@openzeppelin/contracts": ~5.0.2
-    "@openzeppelin/contracts-upgradeable": ~5.0.2
-    "@openzeppelin/hardhat-upgrades": ^3.5.0
-    "@typechain/ethers-v5": ~11.1.2
-    "@typechain/ethers-v6": ~0.5.1
-    "@typechain/hardhat": ~9.1.0
-    "@types/eslint": ~9.6.1
-    "@types/mocha": ~10.0.10
-    "@types/prettier": ~3.0.0
-    "@types/qrcode": ~1.5.5
-    "@typescript-eslint/eslint-plugin": ~8.27.0
-    "@typescript-eslint/parser": ~8.27.0
-    chai: ~4.5.0
-    dotenv: ~16.4.5
-    envfile: ~7.1.0
-    eslint: ~9.23.0
-    eslint-config-prettier: ~10.1.1
-    eslint-plugin-prettier: ~5.2.4
-    ethers: ~6.13.2
-    hardhat: ~2.22.10
-    hardhat-deploy: ^1.0.4
-    hardhat-deploy-ethers: ~0.4.2
-    hardhat-gas-reporter: ~2.2.1
-    prettier: ^3.5.3
-    prettier-plugin-solidity: ~1.4.1
-    qrcode: ~1.5.4
-    solidity-coverage: ~0.8.13
-    ts-node: ~10.9.1
-    typechain: ~8.3.2
-    typescript: ^5.8.2
-  languageName: unknown
-  linkType: soft
-
-"@se-2/nextjs@workspace:packages/nextjs":
-  version: 0.0.0-use.local
-  resolution: "@se-2/nextjs@workspace:packages/nextjs"
-  dependencies:
-    "@heroicons/react": ~2.1.5
-    "@hookform/resolvers": ^5.2.2
-    "@radix-ui/react-avatar": ^1.1.11
-    "@radix-ui/react-dialog": ^1.1.15
-    "@radix-ui/react-dropdown-menu": ^2.1.16
-    "@radix-ui/react-icons": ^1.3.2
-    "@radix-ui/react-label": ^2.1.8
-    "@radix-ui/react-progress": ^1.1.8
-    "@radix-ui/react-select": ^2.2.6
-    "@radix-ui/react-separator": ^1.1.8
-    "@radix-ui/react-slot": ^1.2.4
-    "@radix-ui/react-tabs": ^1.1.13
-    "@radix-ui/react-toast": ^1.2.15
-    "@rainbow-me/rainbowkit": 2.2.8
-    "@scaffold-ui/components": ^0.1.3
-    "@scaffold-ui/debug-contracts": ^0.1.2
-    "@scaffold-ui/hooks": ^0.1.2
-    "@tailwindcss/postcss": 4.0.15
-    "@tanstack/react-query": ~5.59.15
-    "@trivago/prettier-plugin-sort-imports": ~4.3.0
-    "@types/node": ~18.19.50
-    "@types/react": ~19.0.7
-    abitype: 1.0.6
-    autoprefixer: ~10.4.20
-    bgipfs: ~0.0.12
-    blo: ~1.2.0
-    burner-connector: 0.0.18
-    class-variance-authority: ^0.7.1
-    clsx: ^2.1.1
-    daisyui: 5.0.9
-    date-fns: ^4.1.0
-    eslint: ~9.23.0
-    eslint-config-next: ~15.2.3
-    eslint-config-prettier: ~10.1.1
-    eslint-plugin-prettier: ~5.2.4
-    kubo-rpc-client: ~5.0.2
-    lucide-react: ^0.553.0
-    next: ~15.2.3
-    next-nprogress-bar: ~2.3.13
-    next-themes: ~0.3.0
-    postcss: ~8.4.45
-    prettier: ~3.5.3
-    qrcode.react: ~4.0.1
-    react: ~19.0.0
-    react-dom: ~19.0.0
-    react-hook-form: ^7.66.0
-    react-hot-toast: ~2.4.0
-    recharts: ^3.3.0
-    sonner: ^2.0.7
-    tailwind-merge: ^3.3.1
-    tailwindcss: 4.1.3
-    type-fest: ~4.26.1
-    typescript: ~5.8.2
-    usehooks-ts: ~3.1.0
-    vercel: ~39.1.3
-    viem: 2.34.0
-    wagmi: 2.16.4
-    zod: ^4.1.12
-    zustand: ~5.0.0
-  languageName: unknown
-  linkType: soft
 
 "@sec-ant/readable-stream@npm:^0.4.1":
   version: 0.4.1
@@ -15192,6 +15192,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"meltyfi-xrp@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "meltyfi-xrp@workspace:."
+  dependencies:
+    husky: ~9.1.6
+    lint-staged: ~13.2.2
+  languageName: unknown
+  linkType: soft
+
 "memorystream@npm:^0.3.1":
   version: 0.3.1
   resolution: "memorystream@npm:0.3.1"
@@ -18210,15 +18219,6 @@ __metadata:
   checksum: b7c7d1a68d6ca946f2fbb0778e0c4ec63c65501b54023b2af7d7e9f48fdb6c6580d6f7675cd53bda5944c5ebc057560d5a6365079752546865defb3b79dea454
   languageName: node
   linkType: hard
-
-"se-2@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "se-2@workspace:."
-  dependencies:
-    husky: ~9.1.6
-    lint-staged: ~13.2.2
-  languageName: unknown
-  linkType: soft
 
 "secp256k1@npm:^4.0.1":
   version: 4.0.4

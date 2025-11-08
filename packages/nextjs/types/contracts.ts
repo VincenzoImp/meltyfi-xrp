@@ -6,7 +6,7 @@ import { type Address } from "viem";
 export interface NetworkContracts {
   ChocoChip: Address;
   WonkaBar: Address;
-  VRFManager: Address;
+  PseudoRandomGenerator: Address;
   MeltyTimelock: Address;
   MeltyFiProtocol: Address;
   MeltyDAO: Address;
@@ -15,7 +15,7 @@ export interface NetworkContracts {
 /**
  * Supported networks
  */
-export type SupportedNetwork = "localhost" | "sepolia" | "mainnet";
+export type SupportedNetwork = "localhost" | "xrplEvmTestnet" | "xrplEvmMainnet";
 
 /**
  * Contract deployment info

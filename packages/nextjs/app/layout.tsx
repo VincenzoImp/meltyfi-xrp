@@ -7,7 +7,8 @@ import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 export const metadata = getMetadata({
   title: "MeltyFi - XRP NFT Lotteries",
-  description: "Unlock liquidity for your NFTs on XRP EVM. Create lotteries, earn XRP, and participate in decentralized NFT draws.",
+  description:
+    "Unlock liquidity for your NFTs on XRP EVM. Create lotteries, earn XRP, and participate in decentralized NFT draws.",
 });
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {

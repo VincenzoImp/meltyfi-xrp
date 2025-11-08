@@ -130,9 +130,7 @@ const Home: NextPage = () => {
               <span className="text-2xl font-bold text-primary">3</span>
             </div>
             <h3 className="text-xl font-semibold">Winner Selected</h3>
-            <p className="text-muted-foreground">
-              When the lottery ends or sells out, a random winner is selected via Chainlink VRF.
-            </p>
+            <p className="text-muted-foreground">When the lottery ends or sells out, a random winner is selected.</p>
           </div>
         </div>
       </section>

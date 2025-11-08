@@ -105,11 +105,7 @@ contract WonkaBar is
      * @param amount Number of tokens to mint
      * @dev Only callable by MeltyFiProtocol
      */
-    function mint(
-        address to,
-        uint256 lotteryId,
-        uint256 amount
-    ) external onlyMeltyFiProtocol {
+    function mint(address to, uint256 lotteryId, uint256 amount) external onlyMeltyFiProtocol {
         if (to == address(0)) revert ZeroAddress();
         if (amount == 0) revert ZeroAmount();
 
@@ -123,11 +119,7 @@ contract WonkaBar is
      * @param amount Number of tokens to burn
      * @dev Only callable by MeltyFiProtocol (overrides ERC1155Burnable public burn)
      */
-    function burn(
-        address from,
-        uint256 lotteryId,
-        uint256 amount
-    ) public override onlyMeltyFiProtocol {
+    function burn(address from, uint256 lotteryId, uint256 amount) public override onlyMeltyFiProtocol {
         if (amount == 0) revert ZeroAmount();
 
         _burn(from, lotteryId, amount);

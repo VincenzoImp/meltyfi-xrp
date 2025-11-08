@@ -33,7 +33,7 @@ contract ChocoChip is
     // ============ Constants ============
 
     /// @notice Maximum supply of ChocoChip tokens (1 billion)
-    uint256 public constant MAX_SUPPLY = 1_000_000_000 * 10**18;
+    uint256 public constant MAX_SUPPLY = 1_000_000_000 * 10 ** 18;
 
     // ============ State Variables ============
 
@@ -153,12 +153,7 @@ contract ChocoChip is
      * @notice Get current nonce for permit
      * @dev Overrides required by Solidity for multiple inheritance
      */
-    function nonces(address owner)
-        public
-        view
-        override(ERC20PermitUpgradeable, NoncesUpgradeable)
-        returns (uint256)
-    {
+    function nonces(address owner) public view override(ERC20PermitUpgradeable, NoncesUpgradeable) returns (uint256) {
         return super.nonces(owner);
     }
 }
