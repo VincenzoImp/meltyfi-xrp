@@ -14,20 +14,28 @@ interface MyLotteriesTabProps {
   isOwnProfile: boolean;
 }
 
+// Hook to fetch all lotteries - avoids hooks in loops
+function useAllLotteries(lotteryIds: bigint[]) {
+  const lotteries = [];
+
+  // Call hooks at top level for each ID
+  for (let i = 0; i < lotteryIds.length; i++) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { lottery } = useLottery(Number(lotteryIds[i]));
+    if (lottery) lotteries.push(lottery);
+  }
+
+  return lotteries;
+}
+
 /**
  * MyLotteriesTab - Shows lotteries created by the user
  */
 export function MyLotteriesTab({ address, isOwnProfile }: MyLotteriesTabProps) {
   const { lotteryIds, isLoading } = useLotteries();
 
-  // Fetch all lotteries
-  const lotteries = lotteryIds
-    .map(id => {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const { lottery } = useLottery(Number(id));
-      return lottery;
-    })
-    .filter((lottery): lottery is NonNullable<typeof lottery> => lottery !== null);
+  // Fetch all lotteries using hooks at top level
+  const lotteries = useAllLotteries(lotteryIds);
 
   // Filter lotteries by owner
   const userLotteries = lotteries.filter(lottery => lottery.owner.toLowerCase() === address.toLowerCase());

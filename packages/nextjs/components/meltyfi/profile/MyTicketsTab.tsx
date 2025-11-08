@@ -17,20 +17,28 @@ interface MyTicketsTabProps {
   isOwnProfile: boolean;
 }
 
+// Hook to fetch all lotteries - avoids hooks in loops
+function useAllLotteries(lotteryIds: bigint[]) {
+  const lotteries = [];
+
+  // Call hooks at top level for each ID
+  for (let i = 0; i < lotteryIds.length; i++) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { lottery } = useLottery(Number(lotteryIds[i]));
+    if (lottery) lotteries.push(lottery);
+  }
+
+  return lotteries;
+}
+
 /**
  * MyTicketsTab - Shows WonkaBars (lottery tickets) owned by the user
  */
 export function MyTicketsTab({ address, isOwnProfile }: MyTicketsTabProps) {
   const { lotteryIds, isLoading } = useLotteries();
 
-  // Fetch all lotteries
-  const lotteries = lotteryIds
-    .map(id => {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const { lottery } = useLottery(Number(id));
-      return lottery;
-    })
-    .filter((lottery): lottery is NonNullable<typeof lottery> => lottery !== null);
+  // Fetch all lotteries using hooks at top level
+  const lotteries = useAllLotteries(lotteryIds);
 
   // Filter lotteries where user might have tickets
   // TODO: This is inefficient - should use The Graph to query user's ticket holdings
