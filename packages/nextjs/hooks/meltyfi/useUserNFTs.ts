@@ -72,9 +72,15 @@ async function fetchNFTMetadata(tokenURI: string): Promise<NFTMetadata | null> {
 
     const metadata: NFTMetadata = await response.json();
 
-    // Process image URL (handle IPFS)
-    if (metadata.image?.startsWith("ipfs://")) {
-      metadata.image = metadata.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+    // Process image URL
+    if (metadata.image) {
+      // Handle IPFS URIs
+      if (metadata.image.startsWith("ipfs://")) {
+        metadata.image = metadata.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+      }
+      // Keep relative paths as-is (e.g., "/nft-images/0.png")
+      // They will be served from the public folder
+      // Don't convert them to absolute URLs with localhost
     }
 
     return metadata;

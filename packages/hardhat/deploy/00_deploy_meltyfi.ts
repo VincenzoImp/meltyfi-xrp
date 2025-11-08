@@ -48,13 +48,18 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
 
   log("\n2. Deploying WonkaBar Token (Lottery Tickets)...");
   const WonkaBar = await ethers.getContractFactory("WonkaBar");
-  const wonkaBar = await upgrades.deployProxy(WonkaBar, [deployer, "https://meltyfi.io/api/wonkabar/"], {
+  // Use local metadata server for localhost, production URL for all other networks
+  const wonkaBarBaseURI =
+    hre.network.name === "localhost" || hre.network.name === "hardhat"
+      ? "http://localhost:3000/api/metadata/"
+      : "https://meltyfi-xrp.vercel.app/api/metadata/";
+  const wonkaBar = await upgrades.deployProxy(WonkaBar, [deployer, wonkaBarBaseURI], {
     initializer: "initialize",
     kind: "uups",
   });
   await wonkaBar.waitForDeployment();
   const wonkaBarAddress = await wonkaBar.getAddress();
-  log(`✓ WonkaBar deployed to: ${wonkaBarAddress}`);
+  log(`✓ WonkaBar deployed to: ${wonkaBarAddress} with base URI: ${wonkaBarBaseURI}`);
 
   log("\n3. Deploying PseudoRandomGenerator (On-chain RNG)...");
   const PseudoRandomGenerator = await ethers.getContractFactory("PseudoRandomGenerator");
@@ -114,14 +119,19 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
 
   log("\n7. Deploying Test NFT Collection (for testing/demo)...");
   const TestNFT = await ethers.getContractFactory("TestNFT");
+  // Use local metadata server for localhost, production URL for all other networks
+  const testNFTBaseURI =
+    hre.network.name === "localhost" || hre.network.name === "hardhat"
+      ? "http://localhost:3000/api/metadata/"
+      : "https://meltyfi-xrp.vercel.app/api/metadata/";
   const testNFT = await TestNFT.deploy(
     "MeltyFi Test NFTs",
     "MELTY",
-    "https://api.meltyfi.io/metadata/", // Base URI for metadata
+    testNFTBaseURI, // Base URI for metadata
   );
   await testNFT.waitForDeployment();
   const testNFTAddress = await testNFT.getAddress();
-  log(`✓ TestNFT deployed to: ${testNFTAddress}`);
+  log(`✓ TestNFT deployed to: ${testNFTAddress} with base URI: ${testNFTBaseURI}`);
 
   log("\n8. Setting up roles and authorizations...");
 

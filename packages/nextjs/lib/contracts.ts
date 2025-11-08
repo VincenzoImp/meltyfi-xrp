@@ -14,13 +14,13 @@ import type { NetworkContracts } from "~~/types/contracts";
  */
 export const CONTRACTS: Record<string, NetworkContracts> = {
   localhost: {
-    ChocoChip: "0x2E2Ed0Cfd3AD2f1d34481277b3204d807Ca2F8c2" as Address,
-    WonkaBar: "0xD8a5a9b31c3C0232E196d518E89Fd8bF83AcAd43" as Address,
-    PseudoRandomGenerator: "0xDC11f7E700A4c898AE5CAddB1082cFfa76512aDD" as Address,
-    MeltyTimelock: "0x51A1ceB83B83F1985a81C295d1fF28Afef186E02" as Address,
-    MeltyFiProtocol: "0x36b58F5C1969B7b6591D752ea6F5486D069010AB" as Address,
-    MeltyDAO: "0x8198f5d8F8CfFE8f9C413d98a0A55aEB8ab9FbB7" as Address,
-    TestNFT: "0x0355B7B8cb128fA5692729Ab3AAa199C1753f726" as Address,
+    ChocoChip: "0x95401dc811bb5740090279Ba06cfA8fcF6113778" as Address,
+    WonkaBar: "0x998abeb3E57409262aE5b751f60747921B33613E" as Address,
+    PseudoRandomGenerator: "0x70e0bA845a1A0F2DA3359C97E0285013525FFC49" as Address,
+    MeltyTimelock: "0x4826533B4897376654Bb4d4AD88B7faFD0C98528" as Address,
+    MeltyFiProtocol: "0x99bbA657f2BbC93c02D617f8bA121cB8Fc104Acf" as Address,
+    MeltyDAO: "0x0E801D84Fa97b50751Dbf25036d067dCf18858bF" as Address,
+    TestNFT: "0x8f86403A4DE0BB5791fa46B8e795C547942fE4Cf" as Address,
   },
   // Add addresses for XRP EVM networks when deployed
   xrplEvmTestnet: {
