@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { Address } from "viem";
 import { usePublicClient } from "wagmi";
 
 export interface NFT {
@@ -9,18 +10,78 @@ export interface NFT {
   collectionName: string;
 }
 
+interface NFTMetadata {
+  name?: string;
+  description?: string;
+  image?: string;
+  attributes?: Array<{ trait_type: string; value: string | number }>;
+}
+
+// ERC721Enumerable ABI for fetching user's tokens
+const ERC721_ENUMERABLE_ABI = [
+  {
+    inputs: [{ name: "owner", type: "address" }],
+    name: "tokensOfOwner",
+    outputs: [{ type: "uint256[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    name: "tokenURI",
+    outputs: [{ type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "name",
+    outputs: [{ type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
+
 /**
- * Hook to fetch user's NFT collection
- *
- * Note: This is a simplified implementation. In production, you would want to use:
- * - Alchemy NFT API
- * - Moralis NFT API
- * - The Graph subgraph
- * - OpenSea API
- *
- * For now, this returns mock data for demonstration purposes.
+ * Fetch NFT metadata from tokenURI
+ * Handles IPFS URIs and HTTP URLs
  */
-export function useUserNFTs(address: `0x${string}` | undefined) {
+async function fetchNFTMetadata(tokenURI: string): Promise<NFTMetadata | null> {
+  try {
+    // Handle IPFS URIs
+    let url = tokenURI;
+    if (url.startsWith("ipfs://")) {
+      url = url.replace("ipfs://", "https://ipfs.io/ipfs/");
+    }
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const metadata: NFTMetadata = await response.json();
+
+    // Process image URL (handle IPFS)
+    if (metadata.image?.startsWith("ipfs://")) {
+      metadata.image = metadata.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+    }
+
+    return metadata;
+  } catch (error) {
+    console.error("Error fetching NFT metadata:", error);
+    return null;
+  }
+}
+
+/**
+ * Hook to fetch user's NFT collection from on-chain data
+ * Uses ERC721Enumerable pattern to efficiently fetch all tokens owned by a user
+ *
+ * To use this hook with your NFT collections:
+ * 1. Add your collection addresses to the collections parameter
+ * 2. Ensure your NFT contracts implement ERC721Enumerable with tokensOfOwner()
+ */
+export function useUserNFTs(address: `0x${string}` | undefined, collections: Address[] = []) {
   const publicClient = usePublicClient();
   const [nfts, setNfts] = useState<NFT[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,50 +90,73 @@ export function useUserNFTs(address: `0x${string}` | undefined) {
   useEffect(() => {
     if (!address || !publicClient) {
       setNfts([]);
+      setIsLoading(false);
+      return;
+    }
+
+    // If no collections provided, set empty and return
+    if (collections.length === 0) {
+      setNfts([]);
+      setIsLoading(false);
       return;
     }
 
     const fetchNFTs = async () => {
       setIsLoading(true);
       setError(null);
+      const fetchedNFTs: NFT[] = [];
 
       try {
-        // TODO: Implement real NFT fetching using:
-        // 1. Alchemy NFT API: https://docs.alchemy.com/reference/getnfts
-        // 2. Moralis NFT API: https://docs.moralis.io/web3-data-api/evm/nft-api
-        // 3. The Graph subgraph query
-        // 4. OpenSea API
+        // Fetch NFTs from each collection
+        for (const collectionAddr of collections) {
+          try {
+            // Get collection name
+            const collectionName = await publicClient.readContract({
+              address: collectionAddr,
+              abi: ERC721_ENUMERABLE_ABI,
+              functionName: "name",
+            });
 
-        // For now, return mock NFTs for demonstration
-        // In a real implementation, you would fetch from an NFT indexer
-        const mockNFTs: NFT[] = [
-          {
-            contract: "0x1234567890123456789012345678901234567890",
-            tokenId: "1",
-            name: "Cool NFT #1",
-            image: "/placeholder-nft.png",
-            collectionName: "Cool Collection",
-          },
-          {
-            contract: "0x1234567890123456789012345678901234567890",
-            tokenId: "2",
-            name: "Cool NFT #2",
-            image: "/placeholder-nft.png",
-            collectionName: "Cool Collection",
-          },
-          {
-            contract: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-            tokenId: "42",
-            name: "Rare NFT #42",
-            image: "/placeholder-nft.png",
-            collectionName: "Rare Collection",
-          },
-        ];
+            // Get all token IDs owned by user using ERC721Enumerable
+            const tokenIds = await publicClient.readContract({
+              address: collectionAddr,
+              abi: ERC721_ENUMERABLE_ABI,
+              functionName: "tokensOfOwner",
+              args: [address],
+            });
 
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+            // Fetch metadata for each token
+            for (const tokenId of tokenIds) {
+              try {
+                const tokenURI = await publicClient.readContract({
+                  address: collectionAddr,
+                  abi: ERC721_ENUMERABLE_ABI,
+                  functionName: "tokenURI",
+                  args: [tokenId],
+                });
 
-        setNfts(mockNFTs);
+                // Fetch and parse metadata
+                const metadata = await fetchNFTMetadata(tokenURI);
+
+                fetchedNFTs.push({
+                  contract: collectionAddr,
+                  tokenId: tokenId.toString(),
+                  name: metadata?.name || `${collectionName} #${tokenId}`,
+                  image: metadata?.image || "/placeholder-nft.png",
+                  collectionName: collectionName || "Unknown Collection",
+                });
+              } catch (error) {
+                console.error(`Error loading token ${tokenId} from ${collectionAddr}:`, error);
+                // Continue with next token on error
+              }
+            }
+          } catch (error) {
+            console.error(`Error loading NFTs from collection ${collectionAddr}:`, error);
+            // Continue with next collection on error
+          }
+        }
+
+        setNfts(fetchedNFTs);
       } catch (err) {
         console.error("Error fetching NFTs:", err);
         setError(err instanceof Error ? err : new Error("Failed to fetch NFTs"));
@@ -83,16 +167,17 @@ export function useUserNFTs(address: `0x${string}` | undefined) {
     };
 
     fetchNFTs();
-  }, [address, publicClient]);
+  }, [address, publicClient, JSON.stringify(collections)]);
 
   return {
     nfts,
     isLoading,
     error,
     refetch: () => {
-      if (address && publicClient) {
+      if (address && publicClient && collections.length > 0) {
+        // Trigger re-fetch by setting loading state
+        setIsLoading(true);
         setNfts([]);
-        // Trigger re-fetch by clearing and letting useEffect run again
       }
     },
   };

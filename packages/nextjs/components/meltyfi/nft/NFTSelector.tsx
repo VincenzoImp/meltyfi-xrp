@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Check, Image as ImageIcon, Loader2, RefreshCw } from "lucide-react";
+import type { Address } from "viem";
 import { useAccount } from "wagmi";
 import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
@@ -12,14 +13,15 @@ import { type NFT, useUserNFTs } from "~~/hooks/meltyfi";
 interface NFTSelectorProps {
   selectedNFT: NFT | null;
   onSelect: (nft: NFT) => void;
+  collections?: Address[];
 }
 
 /**
  * NFTSelector - Gallery view for selecting NFTs from user's wallet
  */
-export function NFTSelector({ selectedNFT, onSelect }: NFTSelectorProps) {
+export function NFTSelector({ selectedNFT, onSelect, collections = [] }: NFTSelectorProps) {
   const { address } = useAccount();
-  const { nfts, isLoading, error, refetch } = useUserNFTs(address as `0x${string}` | undefined);
+  const { nfts, isLoading, error, refetch } = useUserNFTs(address as `0x${string}` | undefined, collections);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
   const handleImageError = (nftKey: string) => {
@@ -93,13 +95,17 @@ export function NFTSelector({ selectedNFT, onSelect }: NFTSelectorProps) {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
+      {/* Header with Stats */}
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">Your NFTs</h3>
-          <p className="text-sm text-muted-foreground">
-            {nfts.length} NFT{nfts.length !== 1 ? "s" : ""} found
-          </p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h3 className="text-lg font-semibold">Your NFTs</h3>
+            <p className="text-sm text-muted-foreground">Select an NFT to create a lottery</p>
+          </div>
+          <Badge variant="secondary" className="px-3 py-1">
+            <span className="font-semibold text-primary">{nfts.length}</span>
+            <span className="ml-1 text-muted-foreground">Total</span>
+          </Badge>
         </div>
         <Button variant="outline" size="sm" onClick={refetch}>
           <RefreshCw className="mr-2 h-4 w-4" />
@@ -124,7 +130,7 @@ export function NFTSelector({ selectedNFT, onSelect }: NFTSelectorProps) {
             >
               <CardContent className="p-0">
                 {/* NFT Image */}
-                <div className="relative aspect-square bg-muted">
+                <div className="relative aspect-square bg-gradient-to-br from-muted to-muted/50">
                   {!hasImageError ? (
                     <Image
                       src={nft.image}
@@ -139,9 +145,16 @@ export function NFTSelector({ selectedNFT, onSelect }: NFTSelectorProps) {
                     </div>
                   )}
 
+                  {/* Token ID Badge */}
+                  <div className="absolute top-2 left-2 z-10">
+                    <Badge variant="secondary" className="text-xs font-mono">
+                      #{nft.tokenId}
+                    </Badge>
+                  </div>
+
                   {/* Selected Badge */}
                   {selected && (
-                    <div className="absolute top-2 right-2">
+                    <div className="absolute top-2 right-2 z-10">
                       <Badge className="bg-primary">
                         <Check className="h-3 w-3" />
                       </Badge>

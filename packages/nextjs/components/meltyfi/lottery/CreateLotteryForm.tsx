@@ -13,7 +13,8 @@ import { Input } from "~~/components/ui/input";
 import { Label } from "~~/components/ui/label";
 import { Separator } from "~~/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~~/components/ui/tabs";
-import { type NFT, useCreateLottery } from "~~/hooks/meltyfi";
+import { type NFT, useCreateLottery, useNFTFaucetCollections } from "~~/hooks/meltyfi";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import {
   BASIS_POINTS,
   ERROR_MESSAGES,
@@ -23,6 +24,7 @@ import {
   MIN_WONKA_BARS_PER_LOTTERY,
   PROTOCOL_FEE_PERCENTAGE,
 } from "~~/lib/constants";
+import { getNFTCollections } from "~~/lib/nft-collections";
 import { formatEth, parseEthToWei } from "~~/lib/utils";
 import type { CreateLotteryFormData } from "~~/types/lottery";
 
@@ -32,7 +34,15 @@ import type { CreateLotteryFormData } from "~~/types/lottery";
 export function CreateLotteryForm() {
   const router = useRouter();
   const { address } = useAccount();
+  const { targetNetwork } = useTargetNetwork();
   const { createLottery, isPending, isSuccess } = useCreateLottery();
+
+  // Get NFT collections - try dynamic fetch from NFTFaucet factory first
+  const { collections: dynamicCollections } = useNFTFaucetCollections();
+  // Fallback to static collections
+  const staticCollections = getNFTCollections(targetNetwork.id);
+  // Use dynamic collections if available, otherwise use static
+  const nftCollections = dynamicCollections.length > 0 ? dynamicCollections : staticCollections;
 
   const [formData, setFormData] = useState<CreateLotteryFormData>({
     nftContract: "" as `0x${string}`,
@@ -140,7 +150,7 @@ export function CreateLotteryForm() {
 
             {/* Browse NFTs Tab */}
             <TabsContent value="browse" className="mt-4">
-              <NFTSelector selectedNFT={selectedNFT} onSelect={handleNFTSelect} />
+              <NFTSelector selectedNFT={selectedNFT} onSelect={handleNFTSelect} collections={nftCollections} />
             </TabsContent>
 
             {/* Manual Entry Tab */}
