@@ -1,6 +1,6 @@
 import { useChainId, useReadContract } from "wagmi";
 import { LotteryState } from "~~/lib/constants";
-import { ABIS, getContracts } from "~~/lib/contracts";
+import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 import type { Lottery } from "~~/types/lottery";
 
 /**
@@ -8,8 +8,7 @@ import type { Lottery } from "~~/types/lottery";
  */
 export function useLotteries() {
   const chainId = useChainId();
-  const networkName = chainId === 31337 ? "localhost" : "sepolia";
-  const contracts = getContracts(networkName);
+  const contracts = getContractsByChainId(chainId);
 
   // Get active lottery IDs
   const { data: activeLotteryIds, isLoading: isLoadingIds } = useReadContract({
@@ -45,8 +44,7 @@ export function useLotteries() {
  */
 export function useLottery(lotteryId: number) {
   const chainId = useChainId();
-  const networkName = chainId === 31337 ? "localhost" : "sepolia";
-  const contracts = getContracts(networkName);
+  const contracts = getContractsByChainId(chainId);
 
   const { data, isLoading, error, refetch } = useReadContract({
     address: contracts.MeltyFiProtocol,
@@ -91,8 +89,7 @@ export function useLottery(lotteryId: number) {
  */
 export function useUserLotteries(userAddress?: `0x${string}`) {
   const chainId = useChainId();
-  const networkName = chainId === 31337 ? "localhost" : "sepolia";
-  const contracts = getContracts(networkName);
+  const contracts = getContractsByChainId(chainId);
 
   const { data: lotteryIds, isLoading } = useReadContract({
     address: contracts.MeltyFiProtocol,
@@ -115,8 +112,7 @@ export function useUserLotteries(userAddress?: `0x${string}`) {
  */
 export function useUserParticipations(userAddress?: `0x${string}`) {
   const chainId = useChainId();
-  const networkName = chainId === 31337 ? "localhost" : "sepolia";
-  const contracts = getContracts(networkName);
+  const contracts = getContractsByChainId(chainId);
 
   const { data: lotteryIds, isLoading } = useReadContract({
     address: contracts.MeltyFiProtocol,
@@ -139,8 +135,7 @@ export function useUserParticipations(userAddress?: `0x${string}`) {
  */
 export function useWinProbability(userAddress?: `0x${string}`, lotteryId?: number) {
   const chainId = useChainId();
-  const networkName = chainId === 31337 ? "localhost" : "sepolia";
-  const contracts = getContracts(networkName);
+  const contracts = getContractsByChainId(chainId);
 
   const { data: probability } = useReadContract({
     address: contracts.MeltyFiProtocol,

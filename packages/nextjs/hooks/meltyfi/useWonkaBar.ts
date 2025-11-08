@@ -1,13 +1,12 @@
 import { useChainId, useReadContract } from "wagmi";
-import { ABIS, getContracts } from "~~/lib/contracts";
+import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 
 /**
  * Hook to fetch WonkaBar (lottery ticket) data
  */
 export function useWonkaBar(userAddress?: `0x${string}`, lotteryId?: number) {
   const chainId = useChainId();
-  const networkName = chainId === 31337 ? "localhost" : "sepolia";
-  const contracts = getContracts(networkName);
+  const contracts = getContractsByChainId(chainId);
 
   // Get user's WonkaBar balance for specific lottery
   const { data: balance, isLoading } = useReadContract({

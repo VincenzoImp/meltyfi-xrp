@@ -1,13 +1,12 @@
 import { useChainId, useReadContract } from "wagmi";
-import { ABIS, getContracts } from "~~/lib/contracts";
+import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 
 /**
  * Hook to fetch ChocoChip token data
  */
 export function useChocoChip(userAddress?: `0x${string}`) {
   const chainId = useChainId();
-  const networkName = chainId === 31337 ? "localhost" : "sepolia";
-  const contracts = getContracts(networkName);
+  const contracts = getContractsByChainId(chainId);
 
   // Get user's ChocoChip balance
   const { data: balance, isLoading: isLoadingBalance } = useReadContract({

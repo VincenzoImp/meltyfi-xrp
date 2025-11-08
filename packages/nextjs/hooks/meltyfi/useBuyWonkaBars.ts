@@ -1,15 +1,14 @@
 import { toast } from "sonner";
 import { useChainId, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "~~/lib/constants";
-import { ABIS, getContracts } from "~~/lib/contracts";
+import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 
 /**
  * Hook to buy WonkaBars in a lottery
  */
 export function useBuyWonkaBars() {
   const chainId = useChainId();
-  const networkName = chainId === 31337 ? "localhost" : "sepolia";
-  const contracts = getContracts(networkName);
+  const contracts = getContractsByChainId(chainId);
 
   const { writeContract, data: hash, error: writeError, isPending } = useWriteContract();
 
