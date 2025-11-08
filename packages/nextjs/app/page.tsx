@@ -1,80 +1,156 @@
 "use client";
 
 import Link from "next/link";
-import { Address } from "@scaffold-ui/components";
+import { ArrowRight, Sparkles, Ticket } from "lucide-react";
 import type { NextPage } from "next";
-import { hardhat } from "viem/chains";
-import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useTargetNetwork } from "~~/hooks/scaffold-eth";
+import { LotteryGrid, ProtocolStats, UserStats } from "~~/components/meltyfi";
+import { Button } from "~~/components/ui/button";
+import { useLotteries, useLottery } from "~~/hooks/meltyfi";
 
 const Home: NextPage = () => {
-  const { address: connectedAddress } = useAccount();
-  const { targetNetwork } = useTargetNetwork();
+  const { lotteryIds, isLoading } = useLotteries();
+
+  // Get the first few active lotteries for the homepage
+  const featuredLotteryIds = lotteryIds.slice(0, 4);
+
+  // Fetch featured lotteries
+  const featuredLotteries = featuredLotteryIds
+    .map(id => {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const { lottery } = useLottery(Number(id));
+      return lottery;
+    })
+    .filter((lottery): lottery is NonNullable<typeof lottery> => lottery !== null);
 
   return (
-    <>
-      <div className="flex items-center flex-col grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-          </h1>
-          <div className="flex justify-center items-center space-x-2 flex-col">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address
-              address={connectedAddress}
-              chain={targetNetwork}
-              blockExplorerAddressLink={
-                targetNetwork.id === hardhat.id ? `/blockexplorer/address/${connectedAddress}` : undefined
-              }
-            />
-          </div>
-
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/app/page.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
+    <div className="container mx-auto px-4 py-8 space-y-12">
+      {/* Hero Section */}
+      <section className="text-center space-y-6 py-12">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium">NFT Liquidity Protocol</span>
         </div>
 
-        <div className="grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col md:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
+        <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
+          Unlock Your NFT&apos;s
+          <span className="block text-primary mt-2">Instant Liquidity</span>
+        </h1>
+
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          Create lotteries for your NFTs and get instant liquidity. Participants buy tickets for a chance to win, and
+          you keep the proceeds minus a small fee.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+          <Button size="lg" asChild className="text-lg">
+            <Link href="/create">
+              <Ticket className="mr-2 h-5 w-5" />
+              Create Lottery
+            </Link>
+          </Button>
+          <Button size="lg" variant="outline" asChild className="text-lg">
+            <Link href="/lotteries">
+              Browse Lotteries
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* Protocol Stats */}
+      <section>
+        <h2 className="text-2xl font-bold mb-6">Protocol Overview</h2>
+        <ProtocolStats />
+      </section>
+
+      {/* User Stats */}
+      <section>
+        <h2 className="text-2xl font-bold mb-6">Your Dashboard</h2>
+        <UserStats />
+      </section>
+
+      {/* Featured Lotteries */}
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">Active Lotteries</h2>
+          <Button variant="ghost" asChild>
+            <Link href="/lotteries">
+              View All
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="aspect-[3/4] bg-muted animate-pulse rounded-lg" />
+            ))}
+          </div>
+        ) : featuredLotteries.length > 0 ? (
+          <LotteryGrid lotteries={featuredLotteries} />
+        ) : (
+          <div className="text-center py-12 bg-muted rounded-lg">
+            <Ticket className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">No Active Lotteries</h3>
+            <p className="text-muted-foreground mb-4">Be the first to create a lottery!</p>
+            <Button asChild>
+              <Link href="/create">Create Lottery</Link>
+            </Button>
+          </div>
+        )}
+      </section>
+
+      {/* How It Works */}
+      <section className="py-12">
+        <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <span className="text-2xl font-bold text-primary">1</span>
             </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
+            <h3 className="text-xl font-semibold">Create Lottery</h3>
+            <p className="text-muted-foreground">
+              Lock your NFT and set the ticket price. Choose how many tickets to sell and the duration.
+            </p>
+          </div>
+
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <span className="text-2xl font-bold text-primary">2</span>
             </div>
+            <h3 className="text-xl font-semibold">Get Instant Liquidity</h3>
+            <p className="text-muted-foreground">
+              As participants buy tickets, you receive ETH immediately. Keep 95% of all proceeds.
+            </p>
+          </div>
+
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <span className="text-2xl font-bold text-primary">3</span>
+            </div>
+            <h3 className="text-xl font-semibold">Winner Selected</h3>
+            <p className="text-muted-foreground">
+              When the lottery ends or sells out, a random winner is selected via Chainlink VRF.
+            </p>
           </div>
         </div>
-      </div>
-    </>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-primary/5 rounded-2xl p-12 text-center">
+        <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Join the MeltyFi protocol and unlock instant liquidity for your NFTs. No waiting, no hassle, just instant ETH.
+        </p>
+        <Button size="lg" asChild>
+          <Link href="/create">
+            Create Your First Lottery
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Link>
+        </Button>
+      </section>
+    </div>
   );
 };
 
