@@ -36,8 +36,8 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
 
   const isOwner = address && address.toLowerCase() === lottery.owner.toLowerCase();
   const totalRaised = lottery.totalRaised;
-  const refundAmount = (totalRaised * BigInt(OWNER_PERCENTAGE)) / BigInt(BASIS_POINTS);
-  const protocolKeeps = totalRaised - refundAmount;
+  const repaymentAmount = (totalRaised * BigInt(OWNER_PERCENTAGE)) / BigInt(BASIS_POINTS);
+  const protocolKeeps = totalRaised - repaymentAmount;
 
   const handleRepay = async () => {
     if (!isOwner || !address) {
@@ -45,7 +45,7 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
       return;
     }
 
-    await repayLoan(lottery.id, refundAmount);
+    await repayLoan(lottery.id, repaymentAmount);
   };
 
   // Auto-close on success
@@ -58,7 +58,7 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Repay Loan & Cancel Lottery</DialogTitle>
-          <DialogDescription>Cancel this lottery and refund all participants</DialogDescription>
+          <DialogDescription>Cancel this lottery and enable participants to claim refunds</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -69,7 +69,7 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
               <div className="space-y-1">
                 <p className="text-sm font-medium text-destructive">This action cannot be undone</p>
                 <p className="text-xs text-muted-foreground">
-                  All participants will be refunded and the lottery will be cancelled. Your NFT will be returned to you.
+                  Participants will be able to melt their WonkaBars to claim refunds. Your NFT will be returned to you.
                 </p>
               </div>
             </div>
@@ -98,9 +98,9 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
             <div className="flex items-center justify-between text-sm">
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <TrendingDown className="h-4 w-4" />
-                Participant Refunds (95%)
+                Participant Refund Pool (95%)
               </span>
-              <span className="font-medium text-destructive">{formatEth(refundAmount)} ETH</span>
+              <span className="font-medium text-destructive">{formatEth(repaymentAmount)} ETH</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
@@ -111,8 +111,16 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
             <Separator />
 
             <div className="flex items-center justify-between">
-              <span className="font-semibold">You Must Pay</span>
-              <span className="text-lg font-bold text-destructive">{formatEth(refundAmount)} ETH</span>
+              <span className="font-semibold">Repayment Amount</span>
+              <span className="text-lg font-bold text-destructive">{formatEth(repaymentAmount)} ETH</span>
+            </div>
+
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p>• You received {formatEth((totalRaised * BigInt(95)) / BigInt(100))} ETH initially (95%)</p>
+              <p>• You must repay {formatEth(repaymentAmount)} ETH to cancel (100% of sales)</p>
+              <p>
+                • Net cost: {formatEth(repaymentAmount - (totalRaised * BigInt(95)) / BigInt(100))} ETH (5% premium)
+              </p>
             </div>
           </div>
 
@@ -123,10 +131,10 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
               <div className="space-y-1">
                 <p className="text-xs font-medium text-blue-700 dark:text-blue-400">What happens next?</p>
                 <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-                  <li>All {lottery.wonkaBarsSold} participants will receive their refund</li>
                   <li>Your NFT will be returned to your wallet</li>
-                  <li>The lottery will be marked as cancelled</li>
-                  <li>WonkaBars will be burned</li>
+                  <li>The lottery will be marked as CANCELLED</li>
+                  <li>{lottery.wonkaBarsSold} participants can melt WonkaBars to claim refunds + CHOC</li>
+                  <li>Each participant must call meltWonkaBars() to burn tickets and get refund</li>
                 </ul>
               </div>
             </div>
@@ -163,7 +171,7 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
             variant="destructive"
             className="min-w-[120px]"
           >
-            {isPending ? "Processing..." : `Repay ${formatEth(refundAmount)} ETH`}
+            {isPending ? "Processing..." : `Repay ${formatEth(repaymentAmount)} ETH`}
           </Button>
         </DialogFooter>
       </DialogContent>

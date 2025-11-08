@@ -226,7 +226,7 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
                     disabled={!address}
                   >
                     <RefreshCw className="mr-2 h-5 w-5" />
-                    Cancel Lottery & Refund
+                    Repay Loan & Cancel
                   </Button>
                 )}
 
@@ -243,7 +243,7 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
                   </Button>
                 )}
 
-                {/* Participant: Melt WonkaBars */}
+                {/* Participant: Melt WonkaBars (CANCELLED - get refund) */}
                 {isCancelled && Number(userBalance) > 0 && (
                   <Button
                     className="w-full"
@@ -253,7 +253,21 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
                     disabled={!address}
                   >
                     <Flame className="mr-2 h-5 w-5" />
-                    Melt WonkaBars for Refund
+                    Melt WonkaBars for Refund + CHOC
+                  </Button>
+                )}
+
+                {/* Non-Winner: Melt WonkaBars (CONCLUDED - get CHOC only) */}
+                {isConcluded && !isWinner && Number(userBalance) > 0 && (
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    variant="outline"
+                    onClick={() => setMeltDialogOpen(true)}
+                    disabled={!address}
+                  >
+                    <Flame className="mr-2 h-5 w-5" />
+                    Melt WonkaBars for CHOC
                   </Button>
                 )}
 

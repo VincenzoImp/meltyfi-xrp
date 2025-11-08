@@ -128,7 +128,7 @@ export function BuyWonkaBarsDialog({ lottery, open, onOpenChange }: BuyWonkaBars
             <div className="flex items-center justify-between text-sm">
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <Gift className="h-4 w-4" />
-                CHOC Rewards
+                CHOC Rewards (when melted)
               </span>
               <span className="font-medium">{chocoChipsReward.toString()} CHOC</span>
             </div>
