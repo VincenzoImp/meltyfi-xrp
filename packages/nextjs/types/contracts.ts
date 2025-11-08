@@ -10,6 +10,7 @@ export interface NetworkContracts {
   MeltyTimelock: Address;
   MeltyFiProtocol: Address;
   MeltyDAO: Address;
+  TestNFT: Address;
 }
 
 /**

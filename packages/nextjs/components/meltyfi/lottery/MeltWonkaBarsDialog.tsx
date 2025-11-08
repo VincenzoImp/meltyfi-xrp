@@ -1,8 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { AlertCircle, Flame, TrendingUp } from "lucide-react";
-import { toast } from "sonner";
-import { useAccount, useChainId, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, useChainId, useWriteContract } from "wagmi";
 import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
 import {
@@ -15,10 +15,12 @@ import {
 } from "~~/components/ui/dialog";
 import { Separator } from "~~/components/ui/separator";
 import { useWonkaBar } from "~~/hooks/meltyfi";
+import { useTransactor } from "~~/hooks/scaffold-eth";
 import { ERROR_MESSAGES, LotteryState } from "~~/lib/constants";
 import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 import { formatEth } from "~~/lib/utils";
 import type { Lottery } from "~~/types/lottery";
+import { notification } from "~~/utils/scaffold-eth";
 
 interface MeltWonkaBarsDialogProps {
   lottery: Lottery | null;
@@ -34,10 +36,12 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
   const { address } = useAccount();
   const chainId = useChainId();
   const contracts = getContractsByChainId(chainId);
+  const writeTx = useTransactor();
+  const { writeContractAsync } = useWriteContract();
+  const [isPending, setIsPending] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const { balance: userBalance } = useWonkaBar(address as `0x${string}` | undefined, lottery?.id);
-  const { writeContract, data: hash, isPending } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
   if (!lottery) return null;
 
@@ -53,43 +57,31 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
 
   const handleMelt = async () => {
     if (!address || !hasBalance || !canMelt) {
-      toast.error(ERROR_MESSAGES.INVALID_INPUT);
+      notification.error(ERROR_MESSAGES.INVALID_INPUT);
       return;
     }
 
     try {
-      writeContract(
-        {
-          address: contracts.MeltyFiProtocol,
-          abi: ABIS.MeltyFiProtocol,
-          functionName: "meltWonkaBars",
-          args: [BigInt(lottery.id)],
-        },
-        {
-          onSuccess: () => {
-            const successMsg = isCancelled
-              ? `WonkaBars melted! You'll receive ${formatEth(refundAmount)} XRP + ${chocoChipsReward.toString()} CHOC`
-              : `WonkaBars melted! You'll receive ${chocoChipsReward.toString()} CHOC`;
-            toast.success(successMsg);
-          },
-          onError: error => {
-            const errorMessage = error.message;
-            if (errorMessage.includes("LotteryNotMeltable")) {
-              toast.error("Lottery must be cancelled or concluded to melt tickets");
-            } else if (errorMessage.includes("NoWonkaBars")) {
-              toast.error("You don't have any tickets to melt");
-            } else if (errorMessage.includes("WinnerMustClaim")) {
-              toast.error("Winners must claim NFT instead of melting tickets");
-            } else {
-              toast.error(ERROR_MESSAGES.TRANSACTION_REJECTED);
-            }
-            console.error("Melt WonkaBars error:", error);
-          },
-        },
+      setIsPending(true);
+      setIsSuccess(false);
+
+      await writeTx(
+        () =>
+          writeContractAsync({
+            address: contracts.MeltyFiProtocol,
+            abi: ABIS.MeltyFiProtocol,
+            functionName: "meltWonkaBars",
+            args: [BigInt(lottery.id)],
+          }),
+        { blockConfirmations: 1 },
       );
+
+      setIsSuccess(true);
     } catch (error) {
-      toast.error(ERROR_MESSAGES.NETWORK_ERROR);
       console.error("Melt WonkaBars error:", error);
+      setIsSuccess(false);
+    } finally {
+      setIsPending(false);
     }
   };
 
@@ -98,7 +90,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
     setTimeout(() => onOpenChange(false), 2000);
   }
 
-  const loading = isPending || isConfirming;
+  const loading = isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

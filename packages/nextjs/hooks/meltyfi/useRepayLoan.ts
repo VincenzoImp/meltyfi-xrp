@@ -1,6 +1,6 @@
-import { toast } from "sonner";
-import { useChainId, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "~~/lib/constants";
+import { useState } from "react";
+import { useChainId, useWriteContract } from "wagmi";
+import { useTransactor } from "~~/hooks/scaffold-eth";
 import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 
 /**
@@ -9,51 +9,40 @@ import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 export function useRepayLoan() {
   const chainId = useChainId();
   const contracts = getContractsByChainId(chainId);
-
-  const { writeContract, data: hash, error: writeError, isPending } = useWriteContract();
-
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
-    hash,
-  });
+  const writeTx = useTransactor();
+  const { writeContractAsync } = useWriteContract();
+  const [isPending, setIsPending] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const repayLoan = async (lotteryId: number, repaymentAmount: bigint) => {
     try {
-      writeContract(
-        {
-          address: contracts.MeltyFiProtocol,
-          abi: ABIS.MeltyFiProtocol,
-          functionName: "repayLoan",
-          args: [BigInt(lotteryId)],
-          value: repaymentAmount,
-        },
-        {
-          onSuccess: () => {
-            toast.success(SUCCESS_MESSAGES.LOAN_REPAID);
-          },
-          onError: error => {
-            const errorMessage = error.message;
-            if (errorMessage.includes("NotLotteryOwner")) {
-              toast.error("You are not the owner of this lottery");
-            } else if (errorMessage.includes("IncorrectRepaymentAmount")) {
-              toast.error("Incorrect repayment amount");
-            } else {
-              toast.error(ERROR_MESSAGES.TRANSACTION_REJECTED);
-            }
-            console.error("Repay loan error:", error);
-          },
-        },
+      setIsPending(true);
+      setIsSuccess(false);
+
+      await writeTx(
+        () =>
+          writeContractAsync({
+            address: contracts.MeltyFiProtocol,
+            abi: ABIS.MeltyFiProtocol,
+            functionName: "repayLoan",
+            args: [BigInt(lotteryId)],
+            value: repaymentAmount,
+          }),
+        { blockConfirmations: 1 },
       );
+
+      setIsSuccess(true);
     } catch (error) {
-      toast.error(ERROR_MESSAGES.NETWORK_ERROR);
       console.error("Repay loan error:", error);
+      setIsSuccess(false);
+    } finally {
+      setIsPending(false);
     }
   };
 
   return {
     repayLoan,
-    hash,
-    isPending: isPending || isConfirming,
+    isPending,
     isSuccess,
-    error: writeError,
   };
 }

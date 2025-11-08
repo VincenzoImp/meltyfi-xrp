@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Check, Image as ImageIcon, Loader2, RefreshCw } from "lucide-react";
-import type { Address } from "viem";
 import { useAccount } from "wagmi";
 import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
@@ -13,15 +12,14 @@ import { type NFT, useUserNFTs } from "~~/hooks/meltyfi";
 interface NFTSelectorProps {
   selectedNFT: NFT | null;
   onSelect: (nft: NFT) => void;
-  collections?: Address[];
 }
 
 /**
  * NFTSelector - Gallery view for selecting NFTs from user's wallet
  */
-export function NFTSelector({ selectedNFT, onSelect, collections = [] }: NFTSelectorProps) {
+export function NFTSelector({ selectedNFT, onSelect }: NFTSelectorProps) {
   const { address } = useAccount();
-  const { nfts, isLoading, error, refetch } = useUserNFTs(address as `0x${string}` | undefined, collections);
+  const { nfts, isLoading, error, refetch } = useUserNFTs(address as `0x${string}` | undefined);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
   const handleImageError = (nftKey: string) => {

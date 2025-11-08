@@ -6,7 +6,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
-import { Bars3Icon, BugAntIcon, PlusCircleIcon, TicketIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  BugAntIcon,
+  GiftIcon,
+  PlusCircleIcon,
+  TicketIcon,
+  UserCircleIcon,
+} from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
@@ -32,9 +39,9 @@ export const menuLinks: HeaderMenuLink[] = [
     icon: <PlusCircleIcon className="h-4 w-4" />,
   },
   {
-    label: "Debug Contracts",
-    href: "/debug",
-    icon: <BugAntIcon className="h-4 w-4" />,
+    label: "Free Mint",
+    href: "/free-mint",
+    icon: <GiftIcon className="h-4 w-4" />,
   },
 ];
 
@@ -76,6 +83,19 @@ export const HeaderMenuLinks = () => {
           </Link>
         </li>
       )}
+      {/* Debug Contracts link - last item */}
+      <li>
+        <Link
+          href="/debug"
+          passHref
+          className={`${
+            pathname === "/debug" ? "bg-secondary shadow-md" : ""
+          } hover:bg-secondary hover:shadow-md focus:!bg-secondary active:!text-neutral py-1.5 px-3 text-sm rounded-full gap-2 grid grid-flow-col`}
+        >
+          <BugAntIcon className="h-4 w-4" />
+          <span>Debug Contracts</span>
+        </Link>
+      </li>
     </>
   );
 };

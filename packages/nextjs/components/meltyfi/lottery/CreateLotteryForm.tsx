@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Calendar, CheckCircle2, Ticket, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
@@ -13,8 +13,7 @@ import { Input } from "~~/components/ui/input";
 import { Label } from "~~/components/ui/label";
 import { Separator } from "~~/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~~/components/ui/tabs";
-import { type NFT, useCreateLottery, useNFTFaucetCollections } from "~~/hooks/meltyfi";
-import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
+import { type NFT, useCreateLottery } from "~~/hooks/meltyfi";
 import {
   BASIS_POINTS,
   ERROR_MESSAGES,
@@ -24,7 +23,6 @@ import {
   MIN_WONKA_BARS_PER_LOTTERY,
   PROTOCOL_FEE_PERCENTAGE,
 } from "~~/lib/constants";
-import { getNFTCollections } from "~~/lib/nft-collections";
 import { formatEth, parseEthToWei } from "~~/lib/utils";
 import type { CreateLotteryFormData } from "~~/types/lottery";
 
@@ -34,15 +32,7 @@ import type { CreateLotteryFormData } from "~~/types/lottery";
 export function CreateLotteryForm() {
   const router = useRouter();
   const { address } = useAccount();
-  const { targetNetwork } = useTargetNetwork();
   const { createLottery, isPending, isSuccess } = useCreateLottery();
-
-  // Get NFT collections - try dynamic fetch from NFTFaucet factory first
-  const { collections: dynamicCollections } = useNFTFaucetCollections();
-  // Fallback to static collections
-  const staticCollections = getNFTCollections(targetNetwork.id);
-  // Use dynamic collections if available, otherwise use static
-  const nftCollections = dynamicCollections.length > 0 ? dynamicCollections : staticCollections;
 
   const [formData, setFormData] = useState<CreateLotteryFormData>({
     nftContract: "" as `0x${string}`,
@@ -74,6 +64,17 @@ export function CreateLotteryForm() {
   const totalPotential = priceInWei * BigInt(formData.wonkaBarsMaxSupply);
   const protocolFee = (totalPotential * BigInt(PROTOCOL_FEE_PERCENTAGE)) / BigInt(BASIS_POINTS);
   const ownerProceeds = totalPotential - protocolFee;
+
+  // Calculate expiration date (memoized to prevent hydration issues)
+  const expirationDate = useMemo(() => {
+    const date = new Date(Date.now() + formData.durationInDays * 24 * 60 * 60 * 1000);
+    // Use ISO string and format consistently on both client and server
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  }, [formData.durationInDays]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof CreateLotteryFormData, string>> = {};
@@ -150,7 +151,7 @@ export function CreateLotteryForm() {
 
             {/* Browse NFTs Tab */}
             <TabsContent value="browse" className="mt-4">
-              <NFTSelector selectedNFT={selectedNFT} onSelect={handleNFTSelect} collections={nftCollections} />
+              <NFTSelector selectedNFT={selectedNFT} onSelect={handleNFTSelect} />
             </TabsContent>
 
             {/* Manual Entry Tab */}
@@ -348,7 +349,7 @@ export function CreateLotteryForm() {
               <span className="text-muted-foreground">Expiration:</span>
               <Badge variant="secondary">
                 <Calendar className="mr-1 h-3 w-3" />
-                {new Date(Date.now() + formData.durationInDays * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                {expirationDate}
               </Badge>
             </div>
           </div>

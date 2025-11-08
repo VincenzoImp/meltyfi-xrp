@@ -1,6 +1,6 @@
-import { toast } from "sonner";
-import { useChainId, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "~~/lib/constants";
+import { useState } from "react";
+import { useChainId, useWriteContract } from "wagmi";
+import { useTransactor } from "~~/hooks/scaffold-eth";
 import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 
 /**
@@ -9,53 +9,40 @@ import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 export function useBuyWonkaBars() {
   const chainId = useChainId();
   const contracts = getContractsByChainId(chainId);
-
-  const { writeContract, data: hash, error: writeError, isPending } = useWriteContract();
-
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
-    hash,
-  });
+  const writeTx = useTransactor();
+  const { writeContractAsync } = useWriteContract();
+  const [isPending, setIsPending] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const buyWonkaBars = async (lotteryId: number, amount: number, totalCost: bigint) => {
     try {
-      writeContract(
-        {
-          address: contracts.MeltyFiProtocol,
-          abi: ABIS.MeltyFiProtocol,
-          functionName: "buyWonkaBars",
-          args: [BigInt(lotteryId), BigInt(amount)],
-          value: totalCost,
-        },
-        {
-          onSuccess: () => {
-            toast.success(SUCCESS_MESSAGES.WONKA_BARS_PURCHASED);
-          },
-          onError: error => {
-            const errorMessage = error.message;
-            if (errorMessage.includes("InsufficientPayment")) {
-              toast.error(ERROR_MESSAGES.INSUFFICIENT_BALANCE);
-            } else if (errorMessage.includes("ExceedsMaxBalance")) {
-              toast.error(ERROR_MESSAGES.MAX_BALANCE_EXCEEDED);
-            } else if (errorMessage.includes("ExceedsMaxSupply")) {
-              toast.error(ERROR_MESSAGES.MAX_SUPPLY_EXCEEDED);
-            } else {
-              toast.error(ERROR_MESSAGES.TRANSACTION_REJECTED);
-            }
-            console.error("Buy WonkaBars error:", error);
-          },
-        },
+      setIsPending(true);
+      setIsSuccess(false);
+
+      await writeTx(
+        () =>
+          writeContractAsync({
+            address: contracts.MeltyFiProtocol,
+            abi: ABIS.MeltyFiProtocol,
+            functionName: "buyWonkaBars",
+            args: [BigInt(lotteryId), BigInt(amount)],
+            value: totalCost,
+          }),
+        { blockConfirmations: 1 },
       );
+
+      setIsSuccess(true);
     } catch (error) {
-      toast.error(ERROR_MESSAGES.NETWORK_ERROR);
       console.error("Buy WonkaBars error:", error);
+      setIsSuccess(false);
+    } finally {
+      setIsPending(false);
     }
   };
 
   return {
     buyWonkaBars,
-    hash,
-    isPending: isPending || isConfirming,
+    isPending,
     isSuccess,
-    error: writeError,
   };
 }

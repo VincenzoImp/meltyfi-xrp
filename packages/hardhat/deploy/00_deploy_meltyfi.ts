@@ -112,7 +112,18 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   const daoAddress = await dao.getAddress();
   log(`✓ MeltyDAO deployed to: ${daoAddress}`);
 
-  log("\n7. Setting up roles and authorizations...");
+  log("\n7. Deploying Test NFT Collection (for testing/demo)...");
+  const TestNFT = await ethers.getContractFactory("TestNFT");
+  const testNFT = await TestNFT.deploy(
+    "MeltyFi Test NFTs",
+    "MELTY",
+    "https://api.meltyfi.io/metadata/", // Base URI for metadata
+  );
+  await testNFT.waitForDeployment();
+  const testNFTAddress = await testNFT.getAddress();
+  log(`✓ TestNFT deployed to: ${testNFTAddress}`);
+
+  log("\n8. Setting up roles and authorizations...");
 
   // Authorize MeltyFiProtocol as ChocoChip minter
   log("   - Authorizing MeltyFiProtocol as ChocoChip minter...");
@@ -152,12 +163,12 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   log(`  MeltyTimelock:          ${timelockAddress}`);
   log(`  MeltyFiProtocol:        ${protocolAddress}`);
   log(`  MeltyDAO:               ${daoAddress}`);
+  log(`  TestNFT:                ${testNFTAddress}`);
   log("\nNext Steps:");
-  log("  1. Verify Band Protocol oracle address (currently: ${BAND_ORACLE_ADDRESS})");
-  log("  2. Update DAO treasury address if needed");
-  log("  3. Deploy frontend and configure contract addresses");
-  log("  4. Run comprehensive tests");
-  log("  5. Note: Using pseudo-random generation (not cryptographically secure)");
+  log("  1. Visit the Free Mint page to mint test NFTs");
+  log("  2. Create lotteries with your minted NFTs");
+  log("  3. Verify Band Protocol oracle address (currently: ${BAND_ORACLE_ADDRESS})");
+  log("  4. Note: Using pseudo-random generation (not cryptographically secure)");
   log("========================================\n");
 
   // Save deployment info for frontend
@@ -173,6 +184,7 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
       MeltyTimelock: timelockAddress,
       MeltyFiProtocol: protocolAddress,
       MeltyDAO: daoAddress,
+      TestNFT: testNFTAddress,
     },
     parameters: {
       protocolFee: "5%",
@@ -194,6 +206,50 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   const deploymentsDir = path.join(__dirname, "..", "deployments", hre.network.name);
   fs.mkdirSync(deploymentsDir, { recursive: true });
   fs.writeFileSync(path.join(deploymentsDir, "meltyfi.json"), JSON.stringify(deploymentInfo, null, 2));
+
+  // Auto-update contracts.ts file with new addresses
+  try {
+    const contractsFilePath = path.join(__dirname, "..", "..", "nextjs", "lib", "contracts.ts");
+
+    if (fs.existsSync(contractsFilePath)) {
+      let contractsFileContent = fs.readFileSync(contractsFilePath, "utf8");
+
+      // Map network names
+      const networkMapping: Record<string, string> = {
+        localhost: "localhost",
+        hardhat: "localhost",
+        xrplEvmTestnet: "xrplEvmTestnet",
+        xrplEvmMainnet: "xrplEvmMainnet",
+      };
+
+      const targetNetwork = networkMapping[hre.network.name] || "localhost";
+
+      // Build the new network configuration
+      const newNetworkConfig = `  ${targetNetwork}: {
+    ChocoChip: "${chocoChipAddress}" as Address,
+    WonkaBar: "${wonkaBarAddress}" as Address,
+    PseudoRandomGenerator: "${randomGeneratorAddress}" as Address,
+    MeltyTimelock: "${timelockAddress}" as Address,
+    MeltyFiProtocol: "${protocolAddress}" as Address,
+    MeltyDAO: "${daoAddress}" as Address,
+    TestNFT: "${testNFTAddress}" as Address,
+  },`;
+
+      // Use regex to replace the network configuration
+      const networkPattern = new RegExp(
+        `  ${targetNetwork}:\\s*{[^}]*ChocoChip:[^}]*WonkaBar:[^}]*PseudoRandomGenerator:[^}]*MeltyTimelock:[^}]*MeltyFiProtocol:[^}]*MeltyDAO:[^}]*TestNFT:[^}]*},`,
+        "s",
+      );
+
+      if (networkPattern.test(contractsFileContent)) {
+        contractsFileContent = contractsFileContent.replace(networkPattern, newNetworkConfig);
+        fs.writeFileSync(contractsFilePath, contractsFileContent, "utf8");
+        log(`\n✅ Auto-updated contract addresses in contracts.ts for ${targetNetwork}`);
+      }
+    }
+  } catch (error) {
+    log(`\n⚠️  Could not auto-update contracts.ts: ${error}`);
+  }
 
   return true;
 };

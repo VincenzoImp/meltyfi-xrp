@@ -35,7 +35,11 @@ export function BuyWonkaBarsDialog({ lottery, open, onOpenChange }: BuyWonkaBars
   const { address } = useAccount();
   const [quantity, setQuantity] = useState("1");
   const { buyWonkaBars, isPending, isSuccess } = useBuyWonkaBars();
-  const { balance: userBalance } = useWonkaBar(address as `0x${string}` | undefined, lottery?.id);
+  // Only fetch balance when lottery is available and dialog is open
+  const { balance: userBalance } = useWonkaBar(
+    address && lottery && open ? (address as `0x${string}`) : undefined,
+    lottery?.id,
+  );
 
   if (!lottery) return null;
 
@@ -68,7 +72,7 @@ export function BuyWonkaBarsDialog({ lottery, open, onOpenChange }: BuyWonkaBars
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Buy WonkaBars</DialogTitle>
           <DialogDescription>Purchase lottery tickets for {lottery.nftName}</DialogDescription>

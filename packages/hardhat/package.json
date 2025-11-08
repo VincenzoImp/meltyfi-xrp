@@ -19,6 +19,7 @@
     "lint": "eslint",
     "lint-staged": "eslint",
     "test": "REPORT_GAS=true hardhat test --network hardhat",
+    "update-addresses": "hardhat run scripts/updateContractAddresses.ts",
     "verify": "hardhat etherscan-verify"
   },
   "dependencies": {

@@ -11,4 +11,3 @@ export * from "./useRepayLoan";
 export * from "./useChocoChip";
 export * from "./useWonkaBar";
 export * from "./useUserNFTs";
-export * from "./useNFTFaucetCollections";

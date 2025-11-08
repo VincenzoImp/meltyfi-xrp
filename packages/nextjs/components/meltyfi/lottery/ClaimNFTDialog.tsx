@@ -1,8 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { AlertCircle, Gift, Trophy } from "lucide-react";
-import { toast } from "sonner";
-import { useAccount, useChainId, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, useChainId, useWriteContract } from "wagmi";
 import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
 import {
@@ -14,10 +14,12 @@ import {
   DialogTitle,
 } from "~~/components/ui/dialog";
 import { Separator } from "~~/components/ui/separator";
-import { ERROR_MESSAGES, LotteryState, SUCCESS_MESSAGES } from "~~/lib/constants";
+import { useTransactor } from "~~/hooks/scaffold-eth";
+import { ERROR_MESSAGES, LotteryState } from "~~/lib/constants";
 import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 import { formatAddress } from "~~/lib/utils";
 import type { Lottery } from "~~/types/lottery";
+import { notification } from "~~/utils/scaffold-eth";
 
 interface ClaimNFTDialogProps {
   lottery: Lottery | null;
@@ -32,9 +34,10 @@ export function ClaimNFTDialog({ lottery, open, onOpenChange }: ClaimNFTDialogPr
   const { address } = useAccount();
   const chainId = useChainId();
   const contracts = getContractsByChainId(chainId);
-
-  const { writeContract, data: hash, isPending } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const writeTx = useTransactor();
+  const { writeContractAsync } = useWriteContract();
+  const [isPending, setIsPending] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   if (!lottery) return null;
 
@@ -43,38 +46,31 @@ export function ClaimNFTDialog({ lottery, open, onOpenChange }: ClaimNFTDialogPr
 
   const handleClaim = async () => {
     if (!address || !isWinner) {
-      toast.error("Only the winner can claim the NFT");
+      notification.error("Only the winner can claim the NFT");
       return;
     }
 
     try {
-      writeContract(
-        {
-          address: contracts.MeltyFiProtocol,
-          abi: ABIS.MeltyFiProtocol,
-          functionName: "claimNFT",
-          args: [BigInt(lottery.id)],
-        },
-        {
-          onSuccess: () => {
-            toast.success(SUCCESS_MESSAGES.NFT_CLAIMED);
-          },
-          onError: error => {
-            const errorMessage = error.message;
-            if (errorMessage.includes("NotWinner")) {
-              toast.error("You are not the winner of this lottery");
-            } else if (errorMessage.includes("LotteryNotCompleted")) {
-              toast.error("Lottery is not completed yet");
-            } else {
-              toast.error(ERROR_MESSAGES.TRANSACTION_REJECTED);
-            }
-            console.error("Claim NFT error:", error);
-          },
-        },
+      setIsPending(true);
+      setIsSuccess(false);
+
+      await writeTx(
+        () =>
+          writeContractAsync({
+            address: contracts.MeltyFiProtocol,
+            abi: ABIS.MeltyFiProtocol,
+            functionName: "claimNFT",
+            args: [BigInt(lottery.id)],
+          }),
+        { blockConfirmations: 1 },
       );
+
+      setIsSuccess(true);
     } catch (error) {
-      toast.error(ERROR_MESSAGES.NETWORK_ERROR);
       console.error("Claim NFT error:", error);
+      setIsSuccess(false);
+    } finally {
+      setIsPending(false);
     }
   };
 
@@ -83,7 +79,7 @@ export function ClaimNFTDialog({ lottery, open, onOpenChange }: ClaimNFTDialogPr
     setTimeout(() => onOpenChange(false), 2000);
   }
 
-  const loading = isPending || isConfirming;
+  const loading = isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
