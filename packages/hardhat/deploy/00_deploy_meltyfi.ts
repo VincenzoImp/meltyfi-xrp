@@ -25,10 +25,13 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   log("========================================");
 
   // Band Protocol Oracle for XRP/USD price feed
-  // Update these addresses based on network
-  // XRP EVM Mainnet: TBD (check Band Protocol docs)
-  // XRP EVM Testnet: TBD
-  const BAND_ORACLE_ADDRESS = "0x0000000000000000000000000000000000000000"; // Update with actual Band Protocol StdReference address
+  // Official Band Protocol StdReferenceProxy addresses for XRPL EVM Sidechain:
+  // Mainnet: 0x6ec95bC946DcC7425925801F4e262092E0d1f83b
+  // Testnet: 0x8c064bCf7C0DA3B3b090BAbFE8f3323534D84d68
+  const BAND_ORACLE_ADDRESS =
+    hre.network.name === "xrpEvmMainnet"
+      ? "0x6ec95bC946DcC7425925801F4e262092E0d1f83b"
+      : "0x8c064bCf7C0DA3B3b090BAbFE8f3323534D84d68"; // Default to testnet
 
   // DAO Treasury (deployer initially, should transfer to multisig later)
   const DAO_TREASURY = deployer;
