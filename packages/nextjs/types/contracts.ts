@@ -7,9 +7,7 @@ export interface NetworkContracts {
   ChocoChip: Address;
   WonkaBar: Address;
   PseudoRandomGenerator: Address;
-  MeltyTimelock: Address;
   MeltyFiProtocol: Address;
-  MeltyDAO: Address;
   TestNFT: Address;
 }
 
@@ -30,11 +28,6 @@ export interface DeploymentInfo {
     maxWonkaBars: number;
     minWonkaBars: number;
     maxBalance: string;
-    chocoChipsPerEther: string;
-    votingDelay: string;
-    votingPeriod: string;
-    proposalThreshold: string;
-    quorum: string;
-    timelockDelay: string;
+    chocoChipsRewardPercentage: string;
   };
 }

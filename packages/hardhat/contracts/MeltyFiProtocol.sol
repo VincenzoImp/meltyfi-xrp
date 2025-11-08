@@ -84,9 +84,6 @@ contract MeltyFiProtocol is
     /// @notice Band Protocol StdReference oracle for XRP/USD price
     IStdReference public priceOracle;
 
-    /// @notice DAO treasury address
-    address public daoTreasury;
-
     /// @notice Protocol fee percentage (in basis points, 500 = 5%)
     uint256 public protocolFeePercentage;
 
@@ -171,7 +168,7 @@ contract MeltyFiProtocol is
 
     event ProtocolParameterUpdated(string parameter, uint256 oldValue, uint256 newValue);
 
-    event TreasuryUpdated(address indexed oldTreasury, address indexed newTreasury);
+    event FeesWithdrawn(address indexed to, uint256 amount);
 
     // ============ Errors ============
 
@@ -202,27 +199,24 @@ contract MeltyFiProtocol is
 
     /**
      * @notice Initialize the MeltyFi Protocol
-     * @param initialOwner Address of initial owner (DAO/timelock)
+     * @param initialOwner Address of initial owner
      * @param _chocoChipToken ChocoChip token address
      * @param _wonkaBarToken WonkaBar token address
      * @param _randomGenerator Pseudo Random Generator address
      * @param _priceOracle Band Protocol StdReference oracle address
-     * @param _daoTreasury DAO treasury address
      */
     function initialize(
         address initialOwner,
         address _chocoChipToken,
         address _wonkaBarToken,
         address _randomGenerator,
-        address _priceOracle,
-        address _daoTreasury
+        address _priceOracle
     ) external initializer {
         if (initialOwner == address(0)) revert ZeroAddress();
         if (_chocoChipToken == address(0)) revert ZeroAddress();
         if (_wonkaBarToken == address(0)) revert ZeroAddress();
         if (_randomGenerator == address(0)) revert ZeroAddress();
         if (_priceOracle == address(0)) revert ZeroAddress();
-        if (_daoTreasury == address(0)) revert ZeroAddress();
 
         __Ownable_init(initialOwner);
         __Pausable_init();
@@ -234,7 +228,6 @@ contract MeltyFiProtocol is
         wonkaBarToken = WonkaBar(_wonkaBarToken);
         randomGenerator = PseudoRandomGenerator(_randomGenerator);
         priceOracle = IStdReference(_priceOracle);
-        daoTreasury = _daoTreasury;
 
         // Set default parameters
         protocolFeePercentage = 500; // 5%
@@ -338,7 +331,7 @@ contract MeltyFiProtocol is
         uint256 maxAllowed = (lottery.wonkaBarsMaxSupply * maxBalancePercentage) / BASIS_POINTS;
         if (userBalance > maxAllowed) revert ExceedsMaxBalance();
 
-        // Calculate fees: 95% to owner, 5% to DAO
+        // Calculate fees: 95% to owner, 5% stored in protocol
         uint256 feeAmount = (totalCost * protocolFeePercentage) / BASIS_POINTS;
         uint256 ownerAmount = totalCost - feeAmount;
 
@@ -357,12 +350,9 @@ contract MeltyFiProtocol is
         uint256 chocoChipsEarned = _calculateChocoChipRewards(msg.value);
 
         // Interactions
-        // Transfer XRP
+        // Transfer XRP to owner (fees remain in contract)
         (bool ownerSuccess, ) = payable(lottery.owner).call{ value: ownerAmount }("");
         if (!ownerSuccess) revert TransferFailed();
-
-        (bool daoSuccess, ) = payable(daoTreasury).call{ value: feeAmount }("");
-        if (!daoSuccess) revert TransferFailed();
 
         // Mint WonkaBar tokens
         wonkaBarToken.mint(msg.sender, lotteryId, amount);
@@ -639,14 +629,18 @@ contract MeltyFiProtocol is
     }
 
     /**
-     * @notice Set DAO treasury address
-     * @param newTreasury New treasury address
+     * @notice Withdraw protocol fees
+     * @param to Address to receive fees
+     * @param amount Amount to withdraw
      */
-    function setDaoTreasury(address newTreasury) external onlyOwner {
-        if (newTreasury == address(0)) revert ZeroAddress();
-        address oldTreasury = daoTreasury;
-        daoTreasury = newTreasury;
-        emit TreasuryUpdated(oldTreasury, newTreasury);
+    function withdrawFees(address payable to, uint256 amount) external onlyOwner {
+        if (to == address(0)) revert ZeroAddress();
+        if (amount > address(this).balance) revert TransferFailed();
+
+        (bool success, ) = to.call{ value: amount }("");
+        if (!success) revert TransferFailed();
+
+        emit FeesWithdrawn(to, amount);
     }
 
     /**

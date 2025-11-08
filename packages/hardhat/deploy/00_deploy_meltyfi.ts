@@ -9,10 +9,9 @@ import { ethers, upgrades } from "hardhat";
  * 1. ChocoChip (governance token)
  * 2. WonkaBar (lottery tickets)
  * 3. PseudoRandomGenerator (on-chain randomness)
- * 4. MeltyTimelock (governance timelock)
- * 5. MeltyFiProtocol (main protocol)
- * 6. MeltyDAO (governance)
- * 7. Setup roles and authorizations
+ * 4. MeltyFiProtocol (main protocol)
+ * 5. TestNFT (test collection)
+ * 6. Setup roles and authorizations
  *
  * @param hre HardhatRuntimeEnvironment object
  */
@@ -32,9 +31,6 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
     hre.network.name === "xrpEvmMainnet"
       ? "0x6ec95bC946DcC7425925801F4e262092E0d1f83b"
       : "0x8c064bCf7C0DA3B3b090BAbFE8f3323534D84d68"; // Default to testnet
-
-  // DAO Treasury (deployer initially, should transfer to multisig later)
-  const DAO_TREASURY = deployer;
 
   log("\n1. Deploying ChocoChip Token (Governance)...");
   const ChocoChip = await ethers.getContractFactory("ChocoChip");
@@ -69,35 +65,13 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   });
   await randomGenerator.waitForDeployment();
   const randomGeneratorAddress = await randomGenerator.getAddress();
-
   log(`✓ PseudoRandomGenerator deployed to: ${randomGeneratorAddress}`);
 
-  log("\n4. Deploying MeltyTimelock (Governance Timelock)...");
-  const MeltyTimelock = await ethers.getContractFactory("MeltyTimelock");
-
-  // For initial deployment, deployer is proposer/executor
-  // After DAO deployment, we'll update these roles
-  const timelockProposers: string[] = [deployer]; // Will add DAO later
-  const timelockExecutors: string[] = [deployer]; // Will add DAO later
-  const timelockCancellers: string[] = [deployer]; // Emergency multisig
-
-  const timelock = await upgrades.deployProxy(
-    MeltyTimelock,
-    [deployer, timelockProposers, timelockExecutors, timelockCancellers],
-    {
-      initializer: "initialize",
-      kind: "uups",
-    },
-  );
-  await timelock.waitForDeployment();
-  const timelockAddress = await timelock.getAddress();
-  log(`✓ MeltyTimelock deployed to: ${timelockAddress}`);
-
-  log("\n5. Deploying MeltyFiProtocol (Main Protocol)...");
+  log("\n4. Deploying MeltyFiProtocol (Main Protocol)...");
   const MeltyFiProtocol = await ethers.getContractFactory("MeltyFiProtocol");
   const protocol = await upgrades.deployProxy(
     MeltyFiProtocol,
-    [deployer, chocoChipAddress, wonkaBarAddress, randomGeneratorAddress, BAND_ORACLE_ADDRESS, DAO_TREASURY],
+    [deployer, chocoChipAddress, wonkaBarAddress, randomGeneratorAddress, BAND_ORACLE_ADDRESS],
     {
       initializer: "initialize",
       kind: "uups",
@@ -107,17 +81,7 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   const protocolAddress = await protocol.getAddress();
   log(`✓ MeltyFiProtocol deployed to: ${protocolAddress}`);
 
-  log("\n6. Deploying MeltyDAO (Governance)...");
-  const MeltyDAO = await ethers.getContractFactory("MeltyDAO");
-  const dao = await upgrades.deployProxy(MeltyDAO, [chocoChipAddress, timelockAddress, timelockAddress], {
-    initializer: "initialize",
-    kind: "uups",
-  });
-  await dao.waitForDeployment();
-  const daoAddress = await dao.getAddress();
-  log(`✓ MeltyDAO deployed to: ${daoAddress}`);
-
-  log("\n7. Deploying Test NFT Collection (for testing/demo)...");
+  log("\n5. Deploying Test NFT Collection (for testing/demo)...");
   const TestNFT = await ethers.getContractFactory("TestNFT");
   // Use local metadata server for localhost, production URL for all other networks
   const testNFTBaseURI =
@@ -133,7 +97,7 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   const testNFTAddress = await testNFT.getAddress();
   log(`✓ TestNFT deployed to: ${testNFTAddress} with base URI: ${testNFTBaseURI}`);
 
-  log("\n8. Setting up roles and authorizations...");
+  log("\n6. Setting up roles and authorizations...");
 
   // Authorize MeltyFiProtocol as ChocoChip minter
   log("   - Authorizing MeltyFiProtocol as ChocoChip minter...");
@@ -147,21 +111,7 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   log("   - Setting MeltyFiProtocol in PseudoRandomGenerator...");
   await randomGenerator.updateMeltyFiProtocol(protocolAddress);
 
-  // Grant timelock roles to DAO
-  log("   - Granting DAO proposer/executor roles...");
-  const PROPOSER_ROLE = await timelock.PROPOSER_ROLE();
-  const EXECUTOR_ROLE = await timelock.EXECUTOR_ROLE();
-  await timelock.grantRole(PROPOSER_ROLE, daoAddress);
-  await timelock.grantRole(EXECUTOR_ROLE, daoAddress);
-
-  // Transfer ownership of upgradeable contracts to timelock
-  log("   - Transferring ownership to Timelock...");
-  await chocoChip.transferOwnership(timelockAddress);
-  await wonkaBar.transferOwnership(timelockAddress);
-  await protocol.transferOwnership(timelockAddress);
-  await randomGenerator.transferOwnership(timelockAddress);
-  // DAO is already owned by timelock (set in initialize)
-  log("   ✓ Ownership transferred successfully");
+  log("   ✓ Roles and authorizations configured successfully");
 
   log("\n========================================");
   log("MeltyFi Protocol Deployment Complete!");
@@ -170,15 +120,14 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   log(`  ChocoChip:              ${chocoChipAddress}`);
   log(`  WonkaBar:               ${wonkaBarAddress}`);
   log(`  PseudoRandomGenerator:  ${randomGeneratorAddress}`);
-  log(`  MeltyTimelock:          ${timelockAddress}`);
   log(`  MeltyFiProtocol:        ${protocolAddress}`);
-  log(`  MeltyDAO:               ${daoAddress}`);
   log(`  TestNFT:                ${testNFTAddress}`);
   log("\nNext Steps:");
   log("  1. Visit the Free Mint page to mint test NFTs");
   log("  2. Create lotteries with your minted NFTs");
   log("  3. Verify Band Protocol oracle address (currently: ${BAND_ORACLE_ADDRESS})");
   log("  4. Note: Using pseudo-random generation (not cryptographically secure)");
+  log("  5. Protocol fees are stored in MeltyFiProtocol contract");
   log("========================================\n");
 
   // Save deployment info for frontend
@@ -191,9 +140,7 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
       WonkaBar: wonkaBarAddress,
       PseudoRandomGenerator: randomGeneratorAddress,
       BandOracle: BAND_ORACLE_ADDRESS,
-      MeltyTimelock: timelockAddress,
       MeltyFiProtocol: protocolAddress,
-      MeltyDAO: daoAddress,
       TestNFT: testNFTAddress,
     },
     parameters: {
@@ -202,11 +149,6 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
       minWonkaBars: 5,
       maxBalance: "25%",
       chocoChipsRewardPercentage: "10% of XRP USD value",
-      votingDelay: "1 block",
-      votingPeriod: "50,400 blocks (~7 days)",
-      proposalThreshold: "100,000 CHOC",
-      quorum: "4%",
-      timelockDelay: "48 hours",
     },
   };
 
@@ -239,15 +181,13 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
     ChocoChip: "${chocoChipAddress}" as Address,
     WonkaBar: "${wonkaBarAddress}" as Address,
     PseudoRandomGenerator: "${randomGeneratorAddress}" as Address,
-    MeltyTimelock: "${timelockAddress}" as Address,
     MeltyFiProtocol: "${protocolAddress}" as Address,
-    MeltyDAO: "${daoAddress}" as Address,
     TestNFT: "${testNFTAddress}" as Address,
   },`;
 
       // Use regex to replace the network configuration
       const networkPattern = new RegExp(
-        `  ${targetNetwork}:\\s*{[^}]*ChocoChip:[^}]*WonkaBar:[^}]*PseudoRandomGenerator:[^}]*MeltyTimelock:[^}]*MeltyFiProtocol:[^}]*MeltyDAO:[^}]*TestNFT:[^}]*},`,
+        `  ${targetNetwork}:\\s*{[^}]*ChocoChip:[^}]*WonkaBar:[^}]*PseudoRandomGenerator:[^}]*MeltyFiProtocol:[^}]*TestNFT:[^}]*},`,
         "s",
       );
 
