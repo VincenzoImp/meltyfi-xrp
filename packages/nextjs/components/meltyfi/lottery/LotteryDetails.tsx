@@ -4,12 +4,17 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { BuyWonkaBarsDialog } from "./BuyWonkaBarsDialog";
+import { ClaimNFTDialog } from "./ClaimNFTDialog";
+import { MeltWonkaBarsDialog } from "./MeltWonkaBarsDialog";
+import { RepayLoanDialog } from "./RepayLoanDialog";
 import {
   Calendar,
   CheckCircle2,
   Clock,
   Copy,
   ExternalLink,
+  Flame,
+  RefreshCw,
   Target,
   Ticket,
   TrendingUp,
@@ -38,14 +43,20 @@ interface LotteryDetailsProps {
 export function LotteryDetails({ lottery }: LotteryDetailsProps) {
   const { address } = useAccount();
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
+  const [repayDialogOpen, setRepayDialogOpen] = useState(false);
+  const [claimDialogOpen, setClaimDialogOpen] = useState(false);
+  const [meltDialogOpen, setMeltDialogOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [copied, setCopied] = useState(false);
   const { balance: userBalance } = useWonkaBar(address as `0x${string}` | undefined, lottery.id);
 
   const progressPercentage = calculatePercentage(lottery.wonkaBarsSold, lottery.wonkaBarsMaxSupply);
   const isActive = lottery.state === LotteryState.ACTIVE;
+  const isCancelled = lottery.state === LotteryState.CANCELLED;
+  const isCompleted = lottery.state === LotteryState.COMPLETED;
   const isSoldOut = lottery.wonkaBarsSold >= lottery.wonkaBarsMaxSupply;
   const isOwner = address && address.toLowerCase() === lottery.owner.toLowerCase();
+  const isWinner = address && lottery.winner && address.toLowerCase() === lottery.winner.toLowerCase();
   const userWinProbability =
     Number(userBalance) > 0 ? calculatePercentage(Number(userBalance), lottery.wonkaBarsMaxSupply) : 0;
 
@@ -187,21 +198,69 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
                 </div>
               )}
 
-              {/* Action Button */}
-              {isActive && !isSoldOut ? (
-                <Button className="w-full" size="lg" onClick={() => setBuyDialogOpen(true)} disabled={!address}>
-                  <Ticket className="mr-2 h-5 w-5" />
-                  Buy WonkaBars
-                </Button>
-              ) : (
-                <Button className="w-full" size="lg" variant="secondary" disabled>
-                  {isSoldOut ? "Sold Out" : LOTTERY_STATE_LABELS[lottery.state]}
-                </Button>
-              )}
+              {/* Action Buttons */}
+              <div className="space-y-2">
+                {/* Buy WonkaBars */}
+                {isActive && !isSoldOut ? (
+                  <Button className="w-full" size="lg" onClick={() => setBuyDialogOpen(true)} disabled={!address}>
+                    <Ticket className="mr-2 h-5 w-5" />
+                    Buy WonkaBars
+                  </Button>
+                ) : isActive && isSoldOut ? (
+                  <Button className="w-full" size="lg" variant="secondary" disabled>
+                    Sold Out
+                  </Button>
+                ) : (
+                  <Button className="w-full" size="lg" variant="secondary" disabled>
+                    {LOTTERY_STATE_LABELS[lottery.state]}
+                  </Button>
+                )}
 
-              {!address && (
-                <p className="text-xs text-center text-muted-foreground">Connect your wallet to purchase tickets</p>
-              )}
+                {/* Owner: Repay Loan (Cancel Lottery) */}
+                {isOwner && isActive && lottery.wonkaBarsSold > 0 && (
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    variant="destructive"
+                    onClick={() => setRepayDialogOpen(true)}
+                    disabled={!address}
+                  >
+                    <RefreshCw className="mr-2 h-5 w-5" />
+                    Cancel Lottery & Refund
+                  </Button>
+                )}
+
+                {/* Winner: Claim NFT */}
+                {isWinner && isCompleted && (
+                  <Button
+                    className="w-full bg-yellow-500 hover:bg-yellow-600"
+                    size="lg"
+                    onClick={() => setClaimDialogOpen(true)}
+                    disabled={!address}
+                  >
+                    <Trophy className="mr-2 h-5 w-5" />
+                    Claim Your NFT
+                  </Button>
+                )}
+
+                {/* Participant: Melt WonkaBars */}
+                {isCancelled && Number(userBalance) > 0 && (
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    variant="outline"
+                    onClick={() => setMeltDialogOpen(true)}
+                    disabled={!address}
+                  >
+                    <Flame className="mr-2 h-5 w-5" />
+                    Melt WonkaBars for Refund
+                  </Button>
+                )}
+
+                {!address && (
+                  <p className="text-xs text-center text-muted-foreground">Connect your wallet to interact</p>
+                )}
+              </div>
             </CardContent>
           </Card>
 
@@ -335,8 +394,11 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
         </div>
       </div>
 
-      {/* Buy Dialog */}
+      {/* Dialogs */}
       <BuyWonkaBarsDialog lottery={lottery} open={buyDialogOpen} onOpenChange={setBuyDialogOpen} />
+      <RepayLoanDialog lottery={lottery} open={repayDialogOpen} onOpenChange={setRepayDialogOpen} />
+      <ClaimNFTDialog lottery={lottery} open={claimDialogOpen} onOpenChange={setClaimDialogOpen} />
+      <MeltWonkaBarsDialog lottery={lottery} open={meltDialogOpen} onOpenChange={setMeltDialogOpen} />
     </>
   );
 }
