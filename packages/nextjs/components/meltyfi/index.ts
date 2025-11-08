@@ -18,3 +18,9 @@ export * from "./stats/UserStats";
 
 // NFT Components
 export * from "./nft/NFTSelector";
+
+// Profile Components
+export * from "./profile/OverviewTab";
+export * from "./profile/MyLotteriesTab";
+export * from "./profile/MyTicketsTab";
+export * from "./profile/ChocoChipsTab";
