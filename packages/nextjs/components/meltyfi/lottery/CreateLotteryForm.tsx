@@ -5,13 +5,15 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, Calendar, CheckCircle2, Ticket, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
+import { NFTSelector } from "~~/components/meltyfi";
 import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~~/components/ui/card";
 import { Input } from "~~/components/ui/input";
 import { Label } from "~~/components/ui/label";
 import { Separator } from "~~/components/ui/separator";
-import { useCreateLottery } from "~~/hooks/meltyfi";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~~/components/ui/tabs";
+import { type NFT, useCreateLottery } from "~~/hooks/meltyfi";
 import {
   BASIS_POINTS,
   ERROR_MESSAGES,
@@ -42,7 +44,20 @@ export function CreateLotteryForm() {
     durationInDays: 7,
   });
 
+  const [selectedNFT, setSelectedNFT] = useState<NFT | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof CreateLotteryFormData, string>>>({});
+
+  // Handle NFT selection from gallery
+  const handleNFTSelect = (nft: NFT) => {
+    setSelectedNFT(nft);
+    setFormData({
+      ...formData,
+      nftContract: nft.contract as `0x${string}`,
+      nftTokenId: BigInt(nft.tokenId),
+      nftName: nft.name,
+      nftImageUrl: nft.image,
+    });
+  };
 
   // Calculate estimates
   const priceInWei = formData.wonkaBarPrice ? parseEthToWei(formData.wonkaBarPrice) : 0n;
@@ -110,71 +125,86 @@ export function CreateLotteryForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* NFT Details */}
+      {/* NFT Selection */}
       <Card>
         <CardHeader>
-          <CardTitle>NFT Details</CardTitle>
-          <CardDescription>Provide information about the NFT you want to create a lottery for</CardDescription>
+          <CardTitle>Select NFT</CardTitle>
+          <CardDescription>Choose an NFT from your wallet or enter details manually</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="nftContract">NFT Contract Address *</Label>
-            <Input
-              id="nftContract"
-              placeholder="0x..."
-              value={formData.nftContract}
-              onChange={e => setFormData({ ...formData, nftContract: e.target.value as `0x${string}` })}
-              className={errors.nftContract ? "border-destructive" : ""}
-            />
-            {errors.nftContract && (
-              <p className="text-xs text-destructive flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.nftContract}
-              </p>
-            )}
-          </div>
+        <CardContent>
+          <Tabs defaultValue="browse" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="browse">Browse My NFTs</TabsTrigger>
+              <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+            </TabsList>
 
-          <div className="space-y-2">
-            <Label htmlFor="nftTokenId">Token ID *</Label>
-            <Input
-              id="nftTokenId"
-              type="number"
-              placeholder="0"
-              value={formData.nftTokenId.toString()}
-              onChange={e => setFormData({ ...formData, nftTokenId: BigInt(e.target.value || 0) })}
-            />
-          </div>
+            {/* Browse NFTs Tab */}
+            <TabsContent value="browse" className="mt-4">
+              <NFTSelector selectedNFT={selectedNFT} onSelect={handleNFTSelect} />
+            </TabsContent>
 
-          <div className="space-y-2">
-            <Label htmlFor="nftName">NFT Name *</Label>
-            <Input
-              id="nftName"
-              placeholder="My Cool NFT"
-              value={formData.nftName}
-              onChange={e => setFormData({ ...formData, nftName: e.target.value })}
-              className={errors.nftName ? "border-destructive" : ""}
-            />
-            {errors.nftName && (
-              <p className="text-xs text-destructive flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.nftName}
-              </p>
-            )}
-          </div>
+            {/* Manual Entry Tab */}
+            <TabsContent value="manual" className="mt-4 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="nftContract">NFT Contract Address *</Label>
+                <Input
+                  id="nftContract"
+                  placeholder="0x..."
+                  value={formData.nftContract}
+                  onChange={e => setFormData({ ...formData, nftContract: e.target.value as `0x${string}` })}
+                  className={errors.nftContract ? "border-destructive" : ""}
+                />
+                {errors.nftContract && (
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.nftContract}
+                  </p>
+                )}
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="nftImageUrl">NFT Image URL (optional)</Label>
-            <Input
-              id="nftImageUrl"
-              type="url"
-              placeholder="https://..."
-              value={formData.nftImageUrl}
-              onChange={e => setFormData({ ...formData, nftImageUrl: e.target.value })}
-            />
-            <p className="text-xs text-muted-foreground">
-              If not provided, we&apos;ll attempt to fetch it from the contract
-            </p>
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="nftTokenId">Token ID *</Label>
+                <Input
+                  id="nftTokenId"
+                  type="number"
+                  placeholder="0"
+                  value={formData.nftTokenId.toString()}
+                  onChange={e => setFormData({ ...formData, nftTokenId: BigInt(e.target.value || 0) })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="nftName">NFT Name *</Label>
+                <Input
+                  id="nftName"
+                  placeholder="My Cool NFT"
+                  value={formData.nftName}
+                  onChange={e => setFormData({ ...formData, nftName: e.target.value })}
+                  className={errors.nftName ? "border-destructive" : ""}
+                />
+                {errors.nftName && (
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.nftName}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="nftImageUrl">NFT Image URL (optional)</Label>
+                <Input
+                  id="nftImageUrl"
+                  type="url"
+                  placeholder="https://..."
+                  value={formData.nftImageUrl}
+                  onChange={e => setFormData({ ...formData, nftImageUrl: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  If not provided, we&apos;ll attempt to fetch it from the contract
+                </p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

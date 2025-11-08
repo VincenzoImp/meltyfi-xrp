@@ -15,3 +15,6 @@ export * from "./lottery/CreateLotteryForm";
 // Stats Components
 export * from "./stats/ProtocolStats";
 export * from "./stats/UserStats";
+
+// NFT Components
+export * from "./nft/NFTSelector";
