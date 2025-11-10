@@ -68,6 +68,8 @@ export const ABIS = {
 
 /**
  * Get network name from chain ID
+ * @param chainId - The chain ID to look up
+ * @returns The network name for the given chain ID, or "localhost" if not found
  */
 export function getNetworkName(chainId: number): SupportedNetwork {
   return NETWORK_NAME_BY_CHAIN_ID[chainId] ?? "localhost";
