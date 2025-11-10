@@ -675,16 +675,32 @@ contract MeltyFiProtocol is
     function _calculateChocoChipRewards(uint256 xrpAmount) internal view returns (uint256 chocoChipsAmount) {
         // Get XRP/USD price from Band Protocol oracle
         // Returns rate with 18 decimals (e.g., 2.5 USD = 2500000000000000000)
-        IStdReference.ReferenceData memory data = priceOracle.getReferenceData("XRP", "USD");
+        if (xrpAmount == 0) {
+            return 0;
+        }
 
-        // Calculate USD value: (xrpAmount * xrpPrice) / 1e18
-        uint256 usdValue = (xrpAmount * data.rate) / 1e18;
+        // Gracefully handle missing or unreliable oracle responses (e.g. local dev environments)
+        address oracleAddress = address(priceOracle);
+        if (oracleAddress == address(0) || oracleAddress.code.length == 0) {
+            return 0;
+        }
 
-        // Calculate CHOC rewards: 10% of USD value
-        // chocoChipsRewardPercentage = 1000 (10% in basis points)
-        chocoChipsAmount = (usdValue * chocoChipsRewardPercentage) / BASIS_POINTS;
+        try priceOracle.getReferenceData("XRP", "USD") returns (IStdReference.ReferenceData memory data) {
+            if (data.rate == 0) {
+                return 0;
+            }
 
-        return chocoChipsAmount;
+            // Calculate USD value: (xrpAmount * xrpPrice) / 1e18
+            uint256 usdValue = (xrpAmount * data.rate) / 1e18;
+
+            // Calculate CHOC rewards: 10% of USD value
+            // chocoChipsRewardPercentage = 1000 (10% in basis points)
+            chocoChipsAmount = (usdValue * chocoChipsRewardPercentage) / BASIS_POINTS;
+
+            return chocoChipsAmount;
+        } catch {
+            return 0;
+        }
     }
 
     /**

@@ -23,7 +23,7 @@ import {
   MIN_WONKA_BARS_PER_LOTTERY,
   PROTOCOL_FEE_PERCENTAGE,
 } from "~~/lib/constants";
-import { formatEth, parseEthToWei } from "~~/lib/utils";
+import { formatXrp, parseXrpToWei } from "~~/lib/utils";
 import type { CreateLotteryFormData } from "~~/types/lottery";
 
 /**
@@ -32,7 +32,7 @@ import type { CreateLotteryFormData } from "~~/types/lottery";
 export function CreateLotteryForm() {
   const router = useRouter();
   const { address } = useAccount();
-  const { createLottery, isPending, isSuccess } = useCreateLottery();
+  const { createLottery, isPending, isSuccess, error: createError, canTransact } = useCreateLottery();
 
   const [formData, setFormData] = useState<CreateLotteryFormData>({
     nftContract: "" as `0x${string}`,
@@ -60,7 +60,7 @@ export function CreateLotteryForm() {
   };
 
   // Calculate estimates
-  const priceInWei = formData.wonkaBarPrice ? parseEthToWei(formData.wonkaBarPrice) : 0n;
+  const priceInWei = formData.wonkaBarPrice ? parseXrpToWei(formData.wonkaBarPrice) : 0n;
   const totalPotential = priceInWei * BigInt(formData.wonkaBarsMaxSupply);
   const protocolFee = (totalPotential * BigInt(PROTOCOL_FEE_PERCENTAGE)) / BigInt(BASIS_POINTS);
   const ownerProceeds = totalPotential - protocolFee;
@@ -305,7 +305,7 @@ export function CreateLotteryForm() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Total Potential</p>
-                <p className="font-bold">{formatEth(totalPotential)} XRP</p>
+                <p className="font-bold">{formatXrp(totalPotential)} XRP</p>
               </div>
             </div>
 
@@ -315,7 +315,7 @@ export function CreateLotteryForm() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">You Receive</p>
-                <p className="font-bold">{formatEth(ownerProceeds)} XRP</p>
+                <p className="font-bold">{formatXrp(ownerProceeds)} XRP</p>
               </div>
             </div>
 
@@ -325,7 +325,7 @@ export function CreateLotteryForm() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Protocol Fee (5%)</p>
-                <p className="font-bold">{formatEth(protocolFee)} XRP</p>
+                <p className="font-bold">{formatXrp(protocolFee)} XRP</p>
               </div>
             </div>
           </div>
@@ -362,6 +362,15 @@ export function CreateLotteryForm() {
               </p>
             </div>
           )}
+
+          {!canTransact && (
+            <div className="p-3 bg-destructive/10 rounded-lg">
+              <p className="text-xs text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                Contract not available on this network. Switch to a supported network to create a lottery.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -376,10 +385,21 @@ export function CreateLotteryForm() {
         >
           Cancel
         </Button>
-        <Button type="submit" className="flex-1" disabled={!address || isPending || isSuccess}>
-          {isPending ? "Creating..." : isSuccess ? "Created!" : "Create Lottery"}
+        <Button
+          type="submit"
+          className="flex-1"
+          disabled={!address || isPending || isSuccess || !canTransact}
+        >
+          {isPending ? "Creating..." : isSuccess ? "Created!" : canTransact ? "Create Lottery" : "Unavailable"}
         </Button>
       </div>
+
+      {createError && (
+        <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-xs flex gap-2 items-start">
+          <AlertCircle className="h-4 w-4 mt-0.5" />
+          <p>{createError.message}</p>
+        </div>
+      )}
     </form>
   );
 }

@@ -24,7 +24,7 @@ function useFeaturedLotteries(ids: bigint[]) {
 }
 
 const Home: NextPage = () => {
-  const { lotteryIds, isLoading } = useLotteries();
+  const { lotteryIds, isLoading, error } = useLotteries();
 
   // Get the first few active lotteries for the homepage
   const featuredLotteryIds = lotteryIds.slice(0, 4);
@@ -91,7 +91,15 @@ const Home: NextPage = () => {
           </Button>
         </div>
 
-        {isLoading ? (
+        {error ? (
+          <div className="p-4 bg-destructive/10 text-destructive rounded-lg text-sm flex gap-2 items-start">
+            <Ticket className="h-5 w-5 mt-1" />
+            <div>
+              <p className="font-semibold">Unable to load lotteries.</p>
+              <p>{error.message}</p>
+            </div>
+          </div>
+        ) : isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="aspect-[3/4] bg-muted animate-pulse rounded-lg" />

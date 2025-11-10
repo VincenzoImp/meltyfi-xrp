@@ -7,7 +7,7 @@ import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagm
 import { Button } from "~~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~~/components/ui/card";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
-import { ABIS, getContractAddress } from "~~/lib/contracts";
+import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 
 /**
  * Free Mint Page - Allows users to mint test NFTs for free
@@ -17,7 +17,7 @@ export default function FreeMintPage() {
   const { targetNetwork } = useTargetNetwork();
   const [mintedTokenId, setMintedTokenId] = useState<bigint | null>(null);
 
-  const testNFTAddress = getContractAddress(targetNetwork.name, "TestNFT");
+  const testNFTAddress = getContractsByChainId(targetNetwork.id).TestNFT;
 
   const { writeContract, data: hash, isPending: isWritePending, error: writeError } = useWriteContract();
 
@@ -46,16 +46,13 @@ export default function FreeMintPage() {
         {
           onSuccess: data => {
             toast.success("Minting your NFT...");
-            console.log("Mint transaction:", data);
           },
           onError: error => {
-            console.error("Mint error:", error);
             toast.error(`Failed to mint: ${error.message}`);
           },
         },
       );
     } catch (error) {
-      console.error("Error minting NFT:", error);
       toast.error("Failed to mint NFT");
     }
   };

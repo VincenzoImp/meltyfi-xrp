@@ -18,7 +18,7 @@ import { useWonkaBar } from "~~/hooks/meltyfi";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { ERROR_MESSAGES, LotteryState } from "~~/lib/constants";
 import { ABIS, getContractsByChainId } from "~~/lib/contracts";
-import { formatEth } from "~~/lib/utils";
+import { formatXrp } from "~~/lib/utils";
 import type { Lottery } from "~~/types/lottery";
 import { notification } from "~~/utils/scaffold-eth";
 
@@ -71,7 +71,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
             address: contracts.MeltyFiProtocol,
             abi: ABIS.MeltyFiProtocol,
             functionName: "meltWonkaBars",
-            args: [BigInt(lottery.id)],
+            args: [BigInt(lottery.id), userBalance],
           }),
         { blockConfirmations: 1 },
       );
@@ -132,7 +132,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div className="space-y-1">
               <p className="text-sm font-medium">{lottery.nftName}</p>
-              <p className="text-xs text-muted-foreground">{formatEth(lottery.wonkaBarPrice)} XRP per ticket</p>
+              <p className="text-xs text-muted-foreground">{formatXrp(lottery.wonkaBarPrice)} XRP per ticket</p>
             </div>
             <Badge variant="secondary">{isCancelled ? "Cancelled" : "Concluded"}</Badge>
           </div>
@@ -148,7 +148,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Original Investment</span>
-              <span className="font-medium">{formatEth(refundAmount)} XRP</span>
+              <span className="font-medium">{formatXrp(refundAmount)} XRP</span>
             </div>
 
             <Separator />
@@ -162,7 +162,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
               {isCancelled && (
                 <div className="flex items-center justify-between pl-6">
                   <span className="text-sm text-muted-foreground">XRP Refund</span>
-                  <span className="font-bold text-green-500">{formatEth(refundAmount)} XRP</span>
+                  <span className="font-bold text-green-500">{formatXrp(refundAmount)} XRP</span>
                 </div>
               )}
 
@@ -184,7 +184,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
               <li>
                 Your {userBalance.toString()} WonkaBar{Number(userBalance) !== 1 ? "s" : ""} will be burned (destroyed)
               </li>
-              {isCancelled && <li>You will receive {formatEth(refundAmount)} XRP refunded to your wallet</li>}
+              {isCancelled && <li>You will receive {formatXrp(refundAmount)} XRP refunded to your wallet</li>}
               <li>You will receive {chocoChipsReward.toString()} CHOC (ChocoChips) tokens</li>
               <li>This action cannot be undone</li>
             </ul>
@@ -233,7 +233,7 @@ export function MeltWonkaBarsDialog({ lottery, open, onOpenChange }: MeltWonkaBa
             {loading
               ? "Melting..."
               : isCancelled
-                ? `Melt for ${formatEth(refundAmount)} XRP + CHOC`
+                ? `Melt for ${formatXrp(refundAmount)} XRP + CHOC`
                 : `Melt for ${chocoChipsReward.toString()} CHOC`}
           </Button>
         </DialogFooter>

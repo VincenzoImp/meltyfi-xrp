@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { useChainId, useReadContract } from "wagmi";
 import { ABIS, getContractsByChainId } from "~~/lib/contracts";
+import { ZERO_ADDRESS } from "~~/utils/scaffold-eth/common";
 
 /**
  * Hook to fetch WonkaBar (lottery ticket) data
@@ -7,15 +9,20 @@ import { ABIS, getContractsByChainId } from "~~/lib/contracts";
 export function useWonkaBar(userAddress?: `0x${string}`, lotteryId?: number) {
   const chainId = useChainId();
   const contracts = getContractsByChainId(chainId);
+  const tokenAddress = contracts.WonkaBar;
+  const enabled = useMemo(
+    () => tokenAddress !== ZERO_ADDRESS && !!userAddress && lotteryId !== undefined,
+    [tokenAddress, userAddress, lotteryId],
+  );
 
   // Get user's WonkaBar balance for specific lottery
-  const { data: balance, isLoading } = useReadContract({
-    address: contracts.WonkaBar,
+  const { data: balance, isLoading, error } = useReadContract({
+    address: tokenAddress,
     abi: ABIS.WonkaBar,
     functionName: "balanceOf",
     args: userAddress && lotteryId !== undefined ? [userAddress, BigInt(lotteryId)] : undefined,
     query: {
-      enabled: !!userAddress && lotteryId !== undefined,
+      enabled,
       refetchInterval: 15_000, // Poll every 15 seconds
     },
   });
@@ -23,6 +30,7 @@ export function useWonkaBar(userAddress?: `0x${string}`, lotteryId?: number) {
   return {
     balance: (balance as bigint) || 0n,
     isLoading,
+    error: error || (enabled ? null : new Error("WonkaBar contract unavailable")),
   };
 }
 

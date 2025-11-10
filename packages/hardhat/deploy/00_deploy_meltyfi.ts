@@ -130,6 +130,9 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
   log("  5. Protocol fees are stored in MeltyFiProtocol contract");
   log("========================================\n");
 
+  const fs = await import("fs");
+  const path = await import("path");
+
   // Save deployment info for frontend
   const deploymentInfo = {
     network: hre.network.name,
@@ -152,21 +155,18 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
     },
   };
 
-  // Save deployment info for frontend
-  const fs = await import("fs");
-  const path = await import("path");
   const deploymentsDir = path.join(__dirname, "..", "deployments", hre.network.name);
   fs.mkdirSync(deploymentsDir, { recursive: true });
   fs.writeFileSync(path.join(deploymentsDir, "meltyfi.json"), JSON.stringify(deploymentInfo, null, 2));
 
-  // Auto-update contracts.ts file with new addresses
+  // Auto-update frontend contracts map with latest addresses
   try {
-    const contractsFilePath = path.join(__dirname, "..", "..", "nextjs", "lib", "contracts.ts");
+    const prettier = await import("prettier");
 
+    const contractsFilePath = path.join(__dirname, "..", "..", "nextjs", "lib", "contracts.ts");
     if (fs.existsSync(contractsFilePath)) {
       let contractsFileContent = fs.readFileSync(contractsFilePath, "utf8");
 
-      // Map network names
       const networkMapping: Record<string, string> = {
         localhost: "localhost",
         hardhat: "localhost",
@@ -176,29 +176,129 @@ const deployMeltyFi: DeployFunction = async function (hre: HardhatRuntimeEnviron
 
       const targetNetwork = networkMapping[hre.network.name] || "localhost";
 
-      // Build the new network configuration
-      const newNetworkConfig = `  ${targetNetwork}: {
+      const newNetworkConfig = `const DYNAMIC_CONTRACTS: Partial<Record<SupportedNetwork, NetworkContracts>> = {
+  ${targetNetwork}: {
     ChocoChip: "${chocoChipAddress}" as Address,
     WonkaBar: "${wonkaBarAddress}" as Address,
     PseudoRandomGenerator: "${randomGeneratorAddress}" as Address,
     MeltyFiProtocol: "${protocolAddress}" as Address,
     TestNFT: "${testNFTAddress}" as Address,
-  },`;
+  },
+};`;
 
-      // Use regex to replace the network configuration
-      const networkPattern = new RegExp(
-        `  ${targetNetwork}:\\s*{[^}]*ChocoChip:[^}]*WonkaBar:[^}]*PseudoRandomGenerator:[^}]*MeltyFiProtocol:[^}]*TestNFT:[^}]*},`,
-        "s",
-      );
-
-      if (networkPattern.test(contractsFileContent)) {
-        contractsFileContent = contractsFileContent.replace(networkPattern, newNetworkConfig);
-        fs.writeFileSync(contractsFilePath, contractsFileContent, "utf8");
-        log(`\n✅ Auto-updated contract addresses in contracts.ts for ${targetNetwork}`);
+      const dynamicRegex = /const DYNAMIC_CONTRACTS:[\s\S]*?};/m;
+      if (dynamicRegex.test(contractsFileContent)) {
+        contractsFileContent = contractsFileContent.replace(dynamicRegex, newNetworkConfig);
+      } else {
+        contractsFileContent = contractsFileContent.replace(
+          "const ZERO_ADDRESS",
+          `${newNetworkConfig}\n\nconst ZERO_ADDRESS`,
+        );
       }
+
+      const formatted = await prettier.format(contractsFileContent, { parser: "typescript" });
+      fs.writeFileSync(contractsFilePath, formatted, "utf8");
+      log(`\n✅ Updated frontend contracts map for ${targetNetwork}`);
     }
   } catch (error) {
-    log(`\n⚠️  Could not auto-update contracts.ts: ${error}`);
+    log(`\n⚠️  Failed to auto-update frontend contracts map: ${error}`);
+  }
+
+  // Generate deployedContracts.ts from deployment artifacts
+  try {
+    const prettier = await import("prettier");
+
+    const networkChainIdMapping: Record<string, number> = {
+      localhost: 31337,
+      hardhat: 31337,
+      xrplEvmTestnet: 1449000,
+      xrplEvmMainnet: 1440000,
+    };
+
+    const deploymentsRoot = path.join(__dirname, "..", "deployments");
+    const chainContracts: Record<number, Record<string, string>> = {};
+
+    if (fs.existsSync(deploymentsRoot)) {
+      const entries = fs.readdirSync(deploymentsRoot, { withFileTypes: true }).filter(entry => entry.isDirectory());
+      for (const entry of entries) {
+        const networkDir = entry.name;
+        const chainId = networkChainIdMapping[networkDir];
+        if (!chainId) continue;
+
+        const deploymentFile = path.join(deploymentsRoot, networkDir, "meltyfi.json");
+        if (!fs.existsSync(deploymentFile)) continue;
+
+        try {
+          const info = JSON.parse(fs.readFileSync(deploymentFile, "utf8"));
+          const contracts = info.contracts;
+          chainContracts[chainId] = {
+            ChocoChip: contracts.ChocoChip,
+            WonkaBar: contracts.WonkaBar,
+            PseudoRandomGenerator: contracts.PseudoRandomGenerator,
+            MeltyFiProtocol: contracts.MeltyFiProtocol,
+            TestNFT: contracts.TestNFT,
+          };
+        } catch (jsonError) {
+          log(`\n⚠️  Failed to parse deployment file for ${networkDir}: ${jsonError}`);
+        }
+      }
+    }
+
+    const deployedContractsFilePath = path.join(__dirname, "..", "..", "nextjs", "contracts", "deployedContracts.ts");
+
+    const chainEntries = Object.entries(chainContracts)
+      .map(
+        ([chainId, contracts]) => `  ${chainId}: {
+    ChocoChip: {
+      address: "${contracts.ChocoChip}" as Address,
+      abi: ChocoChipArtifact.abi,
+    },
+    WonkaBar: {
+      address: "${contracts.WonkaBar}" as Address,
+      abi: WonkaBarArtifact.abi,
+    },
+    PseudoRandomGenerator: {
+      address: "${contracts.PseudoRandomGenerator}" as Address,
+      abi: PseudoRandomGeneratorArtifact.abi,
+    },
+    MeltyFiProtocol: {
+      address: "${contracts.MeltyFiProtocol}" as Address,
+      abi: MeltyFiProtocolArtifact.abi,
+    },
+    TestNFT: {
+      address: "${contracts.TestNFT}" as Address,
+      abi: TestNFTArtifact.abi,
+    },
+  },`,
+      )
+      .join("\n");
+
+    const headerComment = `/**
+ * This file is autogenerated by the MeltyFi deployment script.
+ * Do not edit manually.
+ */`;
+
+    const rawContent = `${headerComment}
+import { type Address } from "viem";
+import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
+import ChocoChipArtifact from "../hardhat/artifacts/contracts/ChocoChip.sol/ChocoChip.json";
+import WonkaBarArtifact from "../hardhat/artifacts/contracts/WonkaBar.sol/WonkaBar.json";
+import PseudoRandomGeneratorArtifact from "../hardhat/artifacts/contracts/PseudoRandomGenerator.sol/PseudoRandomGenerator.json";
+import MeltyFiProtocolArtifact from "../hardhat/artifacts/contracts/MeltyFiProtocol.sol/MeltyFiProtocol.json";
+import TestNFTArtifact from "../hardhat/artifacts/contracts/test/TestNFT.sol/TestNFT.json";
+
+const deployedContracts = {
+${chainEntries}
+} as const satisfies GenericContractsDeclaration;
+
+export default deployedContracts;
+`;
+
+    const formattedContent = await prettier.format(rawContent, { parser: "typescript" });
+    fs.writeFileSync(deployedContractsFilePath, formattedContent, "utf8");
+    log(`\n✅ Generated deployedContracts.ts with ${Object.keys(chainContracts).length} network entries`);
+  } catch (error) {
+    log(`\n⚠️  Failed to generate deployedContracts.ts: ${error}`);
   }
 
   return true;

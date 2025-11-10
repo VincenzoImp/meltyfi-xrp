@@ -1,14 +1,14 @@
 {
   "network": "xrplEvmTestnet",
-  "timestamp": "2025-11-08T10:22:07.706Z",
+  "timestamp": "2025-11-10T12:35:48.788Z",
   "blockchain": "XRP EVM",
   "contracts": {
-    "ChocoChip": "0x38C40D735e092B7962c9Ee1bD0561d11154494b8",
-    "WonkaBar": "0x169A9A13c45B8C6DAeD2B706d8AfACDd23411b3C",
-    "PseudoRandomGenerator": "0x4c14EF1987ECFB1D3F402fB8493970C1707Eff91",
+    "ChocoChip": "0x573424b2bA2C6Bf5C632F3997a10Ae7C2A66FA85",
+    "WonkaBar": "0x08ff157C7b181B5317c2e73087E231b0Cd38F6f3",
+    "PseudoRandomGenerator": "0x90104dEd31fcef5246746aEe22815e91c8Ed6a4b",
     "BandOracle": "0x8c064bCf7C0DA3B3b090BAbFE8f3323534D84d68",
-    "MeltyFiProtocol": "0x221C19ABDc55032C65426226cDa007926985275E",
-    "TestNFT": "0xD01727e590dB2df93565063cE2c5B70AACde36Ae"
+    "MeltyFiProtocol": "0x8895754F73221489181b082f4360808c89841A45",
+    "TestNFT": "0xF316Eba4D67325DF9Fb242874B04c3Efe0cC402e"
   },
   "parameters": {
     "protocolFee": "5%",

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { usePublicClient } from "wagmi";
+import { useEffect, useRef, useState } from "react";
+import { useChainId, usePublicClient } from "wagmi";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { getTestNFTAddress } from "~~/lib/nft-collections";
 
@@ -16,6 +16,14 @@ interface NFTMetadata {
   description?: string;
   image?: string;
   attributes?: Array<{ trait_type: string; value: string | number }>;
+}
+
+// Simple in-memory metadata cache to avoid refetching the same URIs
+const metadataCache = new Map<string, NFTMetadata | null>();
+const metadataPromises = new Map<string, Promise<NFTMetadata | null>>();
+
+function normalizeTokenURI(tokenURI: string): string {
+  return tokenURI.trim();
 }
 
 // ERC721Enumerable ABI for fetching user's tokens
@@ -47,11 +55,25 @@ const ERC721_ENUMERABLE_ABI = [
  * Fetch NFT metadata from tokenURI
  * Handles IPFS URIs and HTTP URLs
  */
-async function fetchNFTMetadata(tokenURI: string): Promise<NFTMetadata | null> {
+async function fetchNFTMetadata(tokenURI: string, forceRefresh = false): Promise<NFTMetadata | null> {
   try {
     // Skip if tokenURI is empty or invalid
     if (!tokenURI || tokenURI.trim() === "") {
       return null;
+    }
+    const normalizedUri = normalizeTokenURI(tokenURI);
+
+    if (forceRefresh) {
+      metadataCache.delete(normalizedUri);
+      metadataPromises.delete(normalizedUri);
+    }
+
+    if (metadataCache.has(normalizedUri)) {
+      return metadataCache.get(normalizedUri) ?? null;
+    }
+
+    if (metadataPromises.has(normalizedUri)) {
+      return metadataPromises.get(normalizedUri) ?? null;
     }
 
     // Handle IPFS URIs
@@ -65,25 +87,39 @@ async function fetchNFTMetadata(tokenURI: string): Promise<NFTMetadata | null> {
       return null;
     }
 
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const metadata: NFTMetadata = await response.json();
-
-    // Process image URL
-    if (metadata.image) {
-      // Handle IPFS URIs
-      if (metadata.image.startsWith("ipfs://")) {
-        metadata.image = metadata.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+    const metadataPromise = (async () => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
-      // Keep relative paths as-is (e.g., "/nft-images/0.png")
-      // They will be served from the public folder
-      // Don't convert them to absolute URLs with localhost
-    }
 
-    return metadata;
+      const metadata: NFTMetadata = await response.json();
+
+      // Process image URL
+      if (metadata.image) {
+        // Handle IPFS URIs
+        if (metadata.image.startsWith("ipfs://")) {
+          metadata.image = metadata.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+        }
+        // Keep relative paths as-is (e.g., "/nft-images/0.png")
+        // They will be served from the public folder
+        // Don't convert them to absolute URLs with localhost
+      }
+
+      metadataCache.set(normalizedUri, metadata);
+      return metadata;
+    })()
+      .catch(error => {
+        console.error("Error fetching NFT metadata:", error);
+        metadataCache.set(normalizedUri, null);
+        return null;
+      })
+      .finally(() => {
+        metadataPromises.delete(normalizedUri);
+      });
+
+    metadataPromises.set(normalizedUri, metadataPromise);
+    return metadataPromise;
   } catch (error) {
     console.error("Error fetching NFT metadata:", error);
     return null;
@@ -96,11 +132,14 @@ async function fetchNFTMetadata(tokenURI: string): Promise<NFTMetadata | null> {
  */
 export function useUserNFTs(address: `0x${string}` | undefined) {
   const publicClient = usePublicClient();
+  const chainId = useChainId();
   const { targetNetwork } = useTargetNetwork();
   const [nfts, setNfts] = useState<NFT[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [refetchCounter, setRefetchCounter] = useState(0);
+  const lastRefetchApplied = useRef(0);
+  const lastCollectionAddress = useRef<string | null>(null);
 
   useEffect(() => {
     const fetchNFTs = async () => {
@@ -111,16 +150,31 @@ export function useUserNFTs(address: `0x${string}` | undefined) {
       }
 
       // Get TestNFT address for current network
-      const testNFTAddress = getTestNFTAddress(targetNetwork.name);
+      const resolvedChainId = chainId ?? targetNetwork.id;
+      const testNFTAddress = getTestNFTAddress(resolvedChainId);
       if (!testNFTAddress || testNFTAddress === "0x0000000000000000000000000000000000000000") {
         setNfts([]);
         setIsLoading(false);
         return;
       }
 
+      const collectionChanged = lastCollectionAddress.current !== testNFTAddress;
+      if (collectionChanged) {
+        metadataCache.clear();
+        metadataPromises.clear();
+        lastCollectionAddress.current = testNFTAddress;
+      }
+
       setIsLoading(true);
       setError(null);
       const fetchedNFTs: NFT[] = [];
+      const shouldForceRefresh =
+        (refetchCounter > 0 && lastRefetchApplied.current !== refetchCounter) || collectionChanged;
+
+      if (shouldForceRefresh && !collectionChanged) {
+        metadataCache.clear();
+        metadataPromises.clear();
+      }
 
       try {
         // Get collection name
@@ -149,7 +203,7 @@ export function useUserNFTs(address: `0x${string}` | undefined) {
             });
 
             // Fetch and parse metadata
-            const metadata = await fetchNFTMetadata(tokenURI);
+            const metadata = await fetchNFTMetadata(tokenURI, shouldForceRefresh);
 
             fetchedNFTs.push({
               contract: testNFTAddress,
@@ -171,11 +225,14 @@ export function useUserNFTs(address: `0x${string}` | undefined) {
         setNfts([]);
       } finally {
         setIsLoading(false);
+        if (shouldForceRefresh) {
+          lastRefetchApplied.current = refetchCounter;
+        }
       }
     };
 
     fetchNFTs();
-  }, [address, publicClient, targetNetwork.name, refetchCounter]);
+  }, [address, publicClient, targetNetwork.name, targetNetwork.id, chainId, refetchCounter]);
 
   return {
     nfts,

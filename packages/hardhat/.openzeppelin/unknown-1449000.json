@@ -35,6 +35,66 @@
       "address": "0x221C19ABDc55032C65426226cDa007926985275E",
       "txHash": "0x60616eba12bcbad2fede6b0e87b99a477a007cad60ae8fdd01f5c542e178524c",
       "kind": "uups"
+    },
+    {
+      "address": "0x7547d9905E170D0d6D6E3dEB2279FF13393781f5",
+      "txHash": "0x34b1fe48647a16654d9307baded2c1ec8116f219b96b290785fcc0d6449426d0",
+      "kind": "uups"
+    },
+    {
+      "address": "0x2663a4Df2e0b25c033Ead37DE197F7E53f90F361",
+      "txHash": "0x8b1343c9576117f1d2d8427a16e4142854a402fbddcdf55b5388e7c2af309fb1",
+      "kind": "uups"
+    },
+    {
+      "address": "0x17e0d0Da6CD8D58E754799E03e2DDd7a744d8389",
+      "txHash": "0xb52f72fd5bffdab8975b7b9a922f2afbd460e4fd5ace5d7bebebb76b8a49d7c9",
+      "kind": "uups"
+    },
+    {
+      "address": "0x8F4e7a5deE42229452cf5735197A516a87C7Aeb7",
+      "txHash": "0x9a5922da036dc1ad015795fbe441678f71932d6ae63800ea4a0bedbc3b6a3534",
+      "kind": "uups"
+    },
+    {
+      "address": "0xC364B659C114A6a5685E9006190cFf4E8bc6e6b7",
+      "txHash": "0xcb7eeae6ed7c8bc6ea96d1b6f00ff58f510bd88186b3b7ed2d32e9039767e340",
+      "kind": "uups"
+    },
+    {
+      "address": "0x06dB0BDecA1063b2aD30a62BCb8e704c990fb504",
+      "txHash": "0x03f9809a2413d3d702ec10bd72bdec536d6e514931ec5692c2b0e0e6870646ad",
+      "kind": "uups"
+    },
+    {
+      "address": "0xCacaB49607C810A416E47aE2c23473F64Cb2A2B0",
+      "txHash": "0x3d7cd4435d747e275a86212d8b2845e529b165b1f3ce7aa0a307f277a55d8317",
+      "kind": "uups"
+    },
+    {
+      "address": "0x3282Aa04Fc06A1d54FF1F312D2C92cdb5A2E7A99",
+      "txHash": "0xe2b3de8faede0332020eca348132ba213b75cbfc00ae5d1cdb2028d96d6aded3",
+      "kind": "uups"
+    },
+    {
+      "address": "0x573424b2bA2C6Bf5C632F3997a10Ae7C2A66FA85",
+      "txHash": "0xab52153e9ce5732d2654a8ca094fa63a3c43bff6bf0d72e82f9d547bbe6a191d",
+      "kind": "uups"
+    },
+    {
+      "address": "0x08ff157C7b181B5317c2e73087E231b0Cd38F6f3",
+      "txHash": "0x640949bcf6cf2e5c05e925d7c473478e12d2a0cb558d37f3c1280af388a9f510",
+      "kind": "uups"
+    },
+    {
+      "address": "0x90104dEd31fcef5246746aEe22815e91c8Ed6a4b",
+      "txHash": "0x7b4cd0d24665366ebcf8573e48abeb8786c82b2dbdea73e88534d08ea7abcea9",
+      "kind": "uups"
+    },
+    {
+      "address": "0x8895754F73221489181b082f4360808c89841A45",
+      "txHash": "0x1f7e5391f45a7205a316d97b07d315fd26d2da382a1b32d09976f6a1b2c8053a",
+      "kind": "uups"
     }
   ],
   "impls": {
@@ -996,6 +1056,477 @@
             "numberOfBytes": "20"
           },
           "t_contract(WonkaBar)14912": {
+            "label": "contract WonkaBar",
+            "numberOfBytes": "20"
+          },
+          "t_enum(LotteryState)12637": {
+            "label": "enum MeltyFiProtocol.LotteryState",
+            "members": [
+              "ACTIVE",
+              "CANCELLED",
+              "CONCLUDED",
+              "TRASHED"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_struct(UintSet)11911_storage)": {
+            "label": "mapping(address => struct EnumerableSet.UintSet)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(AddressSet)11754_storage)": {
+            "label": "mapping(uint256 => struct EnumerableSet.AddressSet)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Lottery)12669_storage)": {
+            "label": "mapping(uint256 => struct MeltyFiProtocol.Lottery)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AddressSet)11754_storage": {
+            "label": "struct EnumerableSet.AddressSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)11439_storage",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(Lottery)12669_storage": {
+            "label": "struct MeltyFiProtocol.Lottery",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftContract",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "nftTokenId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "state",
+                "type": "t_enum(LotteryState)12637",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "createdAt",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "expirationDate",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "wonkaBarPrice",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "wonkaBarsMaxSupply",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "wonkaBarsSold",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "totalRaised",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "winner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "vrfRequestId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "12"
+              },
+              {
+                "label": "nftName",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "13"
+              },
+              {
+                "label": "nftImageUrl",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "14"
+              }
+            ],
+            "numberOfBytes": "480"
+          },
+          "t_struct(Set)11439_storage": {
+            "label": "struct EnumerableSet.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_positions",
+                "type": "t_mapping(t_bytes32,t_uint256)",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(UintSet)11911_storage": {
+            "label": "struct EnumerableSet.UintSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)11439_storage",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Pausable": [
+            {
+              "contract": "PausableUpgradeable",
+              "label": "_paused",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol:21",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "52135a45a9db4a051416d0f7f2f6d22bd78ba133f306d30e9c7edb3e8d72c856": {
+      "address": "0x4C3ac2AE262C159eE3C5654d374bC295C838C2c2",
+      "txHash": "0x7c4b96a244d186d28fbe3aeacccaf72b614a8a451343957f885a0c03baf9f5e5",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "chocoChipToken",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(ChocoChip)12597",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:76"
+          },
+          {
+            "label": "wonkaBarToken",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(WonkaBar)14955",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:79"
+          },
+          {
+            "label": "randomGenerator",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_contract(PseudoRandomGenerator)14549",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:82"
+          },
+          {
+            "label": "priceOracle",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_contract(IStdReference)14992",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:85"
+          },
+          {
+            "label": "protocolFeePercentage",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:88"
+          },
+          {
+            "label": "maxWonkaBarsPerLottery",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:91"
+          },
+          {
+            "label": "minWonkaBarsPerLottery",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_uint256",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:94"
+          },
+          {
+            "label": "maxBalancePercentage",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint256",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:97"
+          },
+          {
+            "label": "chocoChipsRewardPercentage",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:101"
+          },
+          {
+            "label": "totalLotteriesCreated",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:104"
+          },
+          {
+            "label": "totalValueLocked",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_uint256",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:107"
+          },
+          {
+            "label": "totalFeesCollected",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_uint256",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:110"
+          },
+          {
+            "label": "lotteries",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_mapping(t_uint256,t_struct(Lottery)12669_storage)",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:113"
+          },
+          {
+            "label": "ownerLotteries",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_mapping(t_address,t_struct(UintSet)11911_storage)",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:116"
+          },
+          {
+            "label": "participantLotteries",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_mapping(t_address,t_struct(UintSet)11911_storage)",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:119"
+          },
+          {
+            "label": "lotteryParticipants",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_mapping(t_uint256,t_struct(AddressSet)11754_storage)",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:122"
+          },
+          {
+            "label": "activeLotteryIds",
+            "offset": 0,
+            "slot": "16",
+            "type": "t_struct(UintSet)11911_storage",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:125"
+          },
+          {
+            "label": "vrfRequestToLottery",
+            "offset": 0,
+            "slot": "18",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "MeltyFiProtocol",
+            "src": "contracts/MeltyFiProtocol.sol:128"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)305_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(PausableStorage)1363_storage": {
+            "label": "struct PausableUpgradeable.PausableStorage",
+            "members": [
+              {
+                "label": "_paused",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(ReentrancyGuardStorage)1427_storage": {
+            "label": "struct ReentrancyGuardUpgradeable.ReentrancyGuardStorage",
+            "members": [
+              {
+                "label": "_status",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(ChocoChip)12597": {
+            "label": "contract ChocoChip",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IStdReference)14992": {
+            "label": "contract IStdReference",
+            "numberOfBytes": "20"
+          },
+          "t_contract(PseudoRandomGenerator)14549": {
+            "label": "contract PseudoRandomGenerator",
+            "numberOfBytes": "20"
+          },
+          "t_contract(WonkaBar)14955": {
             "label": "contract WonkaBar",
             "numberOfBytes": "20"
           },

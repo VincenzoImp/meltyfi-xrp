@@ -30,7 +30,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/card"
 import { Progress } from "~~/components/ui/progress";
 import { useWonkaBar } from "~~/hooks/meltyfi";
 import { LOTTERY_STATE_COLORS, LOTTERY_STATE_LABELS, LotteryState } from "~~/lib/constants";
-import { calculatePercentage, copyToClipboard, formatAddress, formatEth, formatTimeRemaining } from "~~/lib/utils";
+import { calculatePercentage, copyToClipboard, formatAddress, formatTimeRemaining, formatXrp } from "~~/lib/utils";
 import type { Lottery } from "~~/types/lottery";
 
 interface LotteryDetailsProps {
@@ -171,7 +171,7 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Purchase Tickets</span>
-                <span className="text-2xl font-bold">{formatEth(lottery.wonkaBarPrice)} XRP</span>
+                <span className="text-2xl font-bold">{formatXrp(lottery.wonkaBarPrice)} XRP</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -288,7 +288,7 @@ export function LotteryDetails({ lottery }: LotteryDetailsProps) {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Total Raised</p>
-                    <p className="text-lg font-bold">{formatEth(lottery.totalRaised)} XRP</p>
+                    <p className="text-lg font-bold">{formatXrp(lottery.totalRaised)} XRP</p>
                   </div>
                 </div>
               </CardContent>

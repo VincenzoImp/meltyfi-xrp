@@ -32,7 +32,7 @@ function useAllLotteries(lotteryIds: bigint[]) {
  * MyLotteriesTab - Shows lotteries created by the user
  */
 export function MyLotteriesTab({ address, isOwnProfile }: MyLotteriesTabProps) {
-  const { lotteryIds, isLoading } = useLotteries();
+  const { lotteryIds, isLoading, error } = useLotteries();
 
   // Fetch all lotteries using hooks at top level
   const lotteries = useAllLotteries(lotteryIds);
@@ -44,6 +44,18 @@ export function MyLotteriesTab({ address, isOwnProfile }: MyLotteriesTabProps) {
   const concludedLotteries = userLotteries.filter(lottery => lottery.state === LotteryState.CONCLUDED);
   const cancelledLotteries = userLotteries.filter(lottery => lottery.state === LotteryState.CANCELLED);
   const trashedLotteries = userLotteries.filter(lottery => lottery.state === LotteryState.TRASHED);
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center py-12 text-destructive">
+            <p>{error.message}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (isLoading) {
     return (

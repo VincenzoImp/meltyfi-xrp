@@ -7,45 +7,20 @@ import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~~/components/ui/card";
 import { Progress } from "~~/components/ui/progress";
-import { useLotteries, useLottery, useWonkaBar } from "~~/hooks/meltyfi";
+import { useLottery, useUserParticipations, useWonkaBar } from "~~/hooks/meltyfi";
 import { LOTTERY_STATE_COLORS, LOTTERY_STATE_LABELS, LotteryState } from "~~/lib/constants";
-import { calculatePercentage, formatEth } from "~~/lib/utils";
-import type { Lottery } from "~~/types/lottery";
+import { calculatePercentage, formatXrp } from "~~/lib/utils";
 
 interface MyTicketsTabProps {
   address: `0x${string}`;
   isOwnProfile: boolean;
 }
 
-// Hook to fetch all lotteries - avoids hooks in loops
-function useAllLotteries(lotteryIds: bigint[]) {
-  const lotteries = [];
-
-  // Call hooks at top level for each ID
-  for (let i = 0; i < lotteryIds.length; i++) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const { lottery } = useLottery(Number(lotteryIds[i]));
-    if (lottery) lotteries.push(lottery);
-  }
-
-  return lotteries;
-}
-
 /**
  * MyTicketsTab - Shows WonkaBars (lottery tickets) owned by the user
  */
 export function MyTicketsTab({ address, isOwnProfile }: MyTicketsTabProps) {
-  const { lotteryIds, isLoading } = useLotteries();
-
-  // Fetch all lotteries using hooks at top level
-  const lotteries = useAllLotteries(lotteryIds);
-
-  // Filter lotteries where user might have tickets
-  // TODO: This is inefficient - should use The Graph to query user's ticket holdings
-  const lotteriesWithPotentialTickets = lotteries.filter(lottery => {
-    // Only check lotteries that have sold some tickets
-    return lottery.wonkaBarsSold > 0;
-  });
+  const { lotteryIds: participationIds, isLoading, error: participationsError } = useUserParticipations(address);
 
   if (isLoading) {
     return (
@@ -70,7 +45,12 @@ export function MyTicketsTab({ address, isOwnProfile }: MyTicketsTabProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {lotteriesWithPotentialTickets.length === 0 ? (
+          {participationsError ? (
+            <div className="p-3 bg-destructive/10 rounded-lg text-destructive text-sm flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              <span>{participationsError.message}</span>
+            </div>
+          ) : participationIds.length === 0 ? (
             <div className="text-center py-12">
               <Ticket className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
               <p className="text-muted-foreground mb-2">
@@ -87,8 +67,8 @@ export function MyTicketsTab({ address, isOwnProfile }: MyTicketsTabProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              {lotteriesWithPotentialTickets.map(lottery => (
-                <TicketCard key={lottery.id} lottery={lottery} userAddress={address} />
+              {participationIds.map(id => (
+                <TicketCard key={id.toString()} lotteryId={Number(id)} userAddress={address} />
               ))}
             </div>
           )}
@@ -101,12 +81,22 @@ export function MyTicketsTab({ address, isOwnProfile }: MyTicketsTabProps) {
 /**
  * TicketCard - Individual lottery ticket display with balance
  */
-function TicketCard({ lottery, userAddress }: { lottery: Lottery; userAddress: `0x${string}` }) {
-  const { balance } = useWonkaBar(userAddress, lottery.id);
+function TicketCard({ lotteryId, userAddress }: { lotteryId: number; userAddress: `0x${string}` }) {
+  const { lottery, isLoading } = useLottery(lotteryId);
+  const { balance } = useWonkaBar(userAddress, lotteryId);
   const userBalance = Number(balance);
 
-  // Don't show if user has no tickets
-  if (userBalance === 0) {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-center py-6 text-muted-foreground text-sm">Loading lottery...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!lottery || userBalance === 0) {
     return null;
   }
 
@@ -155,11 +145,11 @@ function TicketCard({ lottery, userAddress }: { lottery: Lottery; userAddress: `
               </div>
               <div>
                 <p className="text-muted-foreground">Investment</p>
-                <p className="font-semibold">{formatEth(lottery.wonkaBarPrice * BigInt(userBalance))} XRP</p>
+                <p className="font-semibold">{formatXrp(lottery.wonkaBarPrice * BigInt(userBalance))} XRP</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Ticket Price</p>
-                <p className="font-semibold">{formatEth(lottery.wonkaBarPrice)} XRP</p>
+                <p className="font-semibold">{formatXrp(lottery.wonkaBarPrice)} XRP</p>
               </div>
             </div>
 

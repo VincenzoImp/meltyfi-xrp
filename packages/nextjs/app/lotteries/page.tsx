@@ -18,7 +18,7 @@ const LotteriesPage: NextPage = () => {
   const chainId = useChainId();
   const contracts = getContractsByChainId(chainId);
 
-  const { lotteryIds, isLoading } = useLotteries();
+  const { lotteryIds, isLoading, error: lotteriesError } = useLotteries();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [filterState, setFilterState] = useState("all");
@@ -33,7 +33,7 @@ const LotteriesPage: NextPage = () => {
     args: [id] as const,
   }));
 
-  const { data: lotteriesData, isLoading: isLoadingLotteries } = useReadContracts({
+  const { data: lotteriesData, isLoading: isLoadingLotteries, error: contractsError } = useReadContracts({
     contracts: lotteryContracts as any,
   });
 
@@ -115,6 +115,20 @@ const LotteriesPage: NextPage = () => {
       setBuyDialogOpen(true);
     }
   };
+
+  const pageError = lotteriesError || contractsError;
+
+  if (pageError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold mb-4">Browse Lotteries</h1>
+        <div className="p-4 bg-destructive/10 text-destructive rounded-lg text-sm">
+          <p className="font-semibold mb-1">Unable to load lotteries.</p>
+          <p>{pageError.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

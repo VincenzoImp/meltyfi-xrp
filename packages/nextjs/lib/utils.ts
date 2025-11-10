@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { formatUnits, parseUnits } from "viem";
 
 /**
  * Utility function to merge Tailwind CSS classes
@@ -32,21 +33,39 @@ export function formatNumber(num: number | bigint): string {
 /**
  * Format wei to XRP with specified decimals
  */
-export function formatEth(wei: bigint, decimals = 4): string {
-  const xrp = Number(wei) / 1e18;
-  return xrp.toFixed(decimals);
+export function formatXrp(wei: bigint, decimals = 4): string {
+  try {
+    const formatted = formatUnits(wei, 18);
+    const numeric = Number.parseFloat(formatted);
+    if (Number.isNaN(numeric)) {
+      return "0.00";
+    }
+    return numeric.toFixed(decimals);
+  } catch {
+    return "0.00";
+  }
 }
 
 /**
  * Parse XRP string to wei
  */
-export function parseEthToWei(xrp: string): bigint {
+export function parseXrpToWei(xrp: string): bigint {
   try {
-    return BigInt(Math.floor(parseFloat(xrp) * 1e18));
+    return parseUnits(xrp, 18);
   } catch {
     return 0n;
   }
 }
+
+/**
+ * @deprecated Renamed to formatXrp for clarity.
+ */
+export const formatEth = formatXrp;
+
+/**
+ * @deprecated Renamed to parseXrpToWei for clarity.
+ */
+export const parseEthToWei = parseXrpToWei;
 
 /**
  * Format time remaining in human-readable format

@@ -1,17 +1,18 @@
 # MeltyFi Deployment Guide
 
-## Automatic Contract Address Updates
+## Automatic Frontend Sync
 
-The deployment script now **automatically updates** the contract addresses in `packages/nextjs/lib/contracts.ts` after each deployment.
+The deployment script now **automatically synchronizes** contract information for the frontend every time you deploy.
 
-## How It Works
+### What happens on deploy
 
-When you run `yarn deploy` or `yarn deploy --reset`, the deployment script will:
+When you run `yarn deploy` or `yarn deploy --reset`, the script will:
 
 1. ✅ Deploy all MeltyFi contracts
 2. ✅ Save deployment info to `deployments/{network}/meltyfi.json`
-3. ✅ **Automatically update** `packages/nextjs/lib/contracts.ts` with the new addresses
-4. ✅ Generate TypeScript ABIs for the frontend
+3. ✅ Update `packages/nextjs/lib/contracts.ts` with the latest addresses for the active network
+4. ✅ Regenerate `packages/nextjs/contracts/deployedContracts.ts` so Scaffold-ETH hooks resolve the correct ABI + address per chain
+5. ✅ Regenerate TypeScript ABIs for the frontend helpers
 
 ## Deployment Commands
 
@@ -43,41 +44,25 @@ yarn deploy --network xrplEvmTestnet
 yarn deploy --network xrplEvmMainnet
 ```
 
-## Manual Address Update (if needed)
-
-If you need to manually update the addresses from a previous deployment:
-
-```bash
-yarn update-addresses
-```
-
-This reads from `deployments/{network}/meltyfi.json` and updates `contracts.ts`.
-
 ## What Gets Updated
 
-The following contract addresses are automatically updated for the target network:
+The following contract addresses are written to both `contracts.ts` and `deployedContracts.ts` for the current network:
 
 - ChocoChip (Governance Token)
 - WonkaBar (Lottery Tickets)
 - PseudoRandomGenerator (On-chain RNG)
-- MeltyTimelock (Governance Timelock)
 - MeltyFiProtocol (Main Protocol)
-- MeltyDAO (Governance)
 - TestNFT (Test NFT Collection)
+
+Other governance contracts (MeltyDAO, MeltyTimelock) remain unchanged and can be added manually if needed.
 
 ## Network Mapping
 
 The deployment script automatically maps network names:
 
-- `hardhat` → `localhost` in contracts.ts
-- `localhost` → `localhost` in contracts.ts
-- `xrplEvmTestnet` → `xrplEvmTestnet` in contracts.ts
-- `xrplEvmMainnet` → `xrplEvmMainnet` in contracts.ts
-
-## Example Output
-
-```
-✅ Auto-updated contract addresses in contracts.ts for localhost
-```
+- `hardhat` → `localhost`
+- `localhost` → `localhost`
+- `xrplEvmTestnet` → `xrplEvmTestnet`
+- `xrplEvmMainnet` → `xrplEvmMainnet`
 
 No manual editing required! 🎉

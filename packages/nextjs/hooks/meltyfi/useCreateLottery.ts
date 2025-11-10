@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useChainId, usePublicClient, useWriteContract } from "wagmi";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { ABIS, getContractsByChainId } from "~~/lib/contracts";
-import { parseEthToWei } from "~~/lib/utils";
+import { parseXrpToWei } from "~~/lib/utils";
 import type { CreateLotteryFormData } from "~~/types/lottery";
 import { notification } from "~~/utils/scaffold-eth";
+import { ZERO_ADDRESS } from "~~/utils/scaffold-eth/common";
 
 // ERC721 approve ABI
 const ERC721_APPROVE_ABI = [
@@ -38,16 +39,28 @@ export function useCreateLottery() {
   const { writeContractAsync } = useWriteContract();
   const [isPending, setIsPending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const protocolAddress = contracts.MeltyFiProtocol;
+  const canTransact = useMemo(() => protocolAddress !== ZERO_ADDRESS, [protocolAddress]);
 
   const createLottery = async (formData: CreateLotteryFormData) => {
     try {
       if (!publicClient) {
         notification.error("Wallet not connected");
+        setError(new Error("Wallet not connected"));
+        return;
+      }
+
+      if (!canTransact) {
+        const err = new Error("MeltyFiProtocol contract not available on this network");
+        notification.error(err.message);
+        setError(err);
         return;
       }
 
       setIsPending(true);
       setIsSuccess(false);
+      setError(null);
 
       // Step 1: Check if NFT is already approved
       const approved = await publicClient.readContract({
@@ -67,19 +80,19 @@ export function useCreateLottery() {
               address: formData.nftContract,
               abi: ERC721_APPROVE_ABI,
               functionName: "approve",
-              args: [contracts.MeltyFiProtocol, formData.nftTokenId],
+              args: [protocolAddress, formData.nftTokenId],
             }),
           { blockConfirmations: 1 },
         );
       }
 
       // Step 3: Create the lottery
-      const wonkaBarPriceWei = parseEthToWei(formData.wonkaBarPrice);
+      const wonkaBarPriceWei = parseXrpToWei(formData.wonkaBarPrice);
 
       await writeTx(
         () =>
           writeContractAsync({
-            address: contracts.MeltyFiProtocol,
+            address: protocolAddress,
             abi: ABIS.MeltyFiProtocol,
             functionName: "createLottery",
             args: [
@@ -99,6 +112,7 @@ export function useCreateLottery() {
     } catch (error) {
       console.error("Create lottery error:", error);
       setIsSuccess(false);
+      setError(error instanceof Error ? error : new Error("Failed to create lottery"));
     } finally {
       setIsPending(false);
     }
@@ -108,5 +122,7 @@ export function useCreateLottery() {
     createLottery,
     isPending,
     isSuccess,
+    error,
+    canTransact,
   };
 }

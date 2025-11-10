@@ -10,7 +10,7 @@ import { Button } from "~~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "~~/components/ui/card";
 import { Progress } from "~~/components/ui/progress";
 import { LOTTERY_STATE_COLORS, LOTTERY_STATE_LABELS, LotteryState } from "~~/lib/constants";
-import { calculatePercentage, formatAddress, formatEth, formatTimeRemaining } from "~~/lib/utils";
+import { calculatePercentage, formatAddress, formatTimeRemaining, formatXrp } from "~~/lib/utils";
 import type { Lottery } from "~~/types/lottery";
 
 interface LotteryCardProps {
@@ -111,11 +111,11 @@ export function LotteryCard({ lottery, onBuyClick, compact = false }: LotteryCar
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Ticket className="h-4 w-4" />
-                <span>{formatEth(lottery.wonkaBarPrice)} XRP</span>
+                <span>{formatXrp(lottery.wonkaBarPrice)} XRP</span>
               </div>
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <TrendingUp className="h-4 w-4" />
-                <span>{formatEth(lottery.totalRaised)} XRP</span>
+                <span>{formatXrp(lottery.totalRaised)} XRP</span>
               </div>
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Clock className="h-4 w-4" />

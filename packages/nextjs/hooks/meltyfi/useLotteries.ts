@@ -1,6 +1,8 @@
+import { useMemo } from "react";
 import { useChainId, useReadContract } from "wagmi";
 import { LotteryState } from "~~/lib/constants";
 import { ABIS, getContractsByChainId } from "~~/lib/contracts";
+import { ZERO_ADDRESS } from "~~/utils/scaffold-eth/common";
 import type { Lottery } from "~~/types/lottery";
 
 /**
@@ -9,22 +11,32 @@ import type { Lottery } from "~~/types/lottery";
 export function useLotteries() {
   const chainId = useChainId();
   const contracts = getContractsByChainId(chainId);
+  const protocolAddress = contracts.MeltyFiProtocol;
+  const enabled = useMemo(() => protocolAddress !== ZERO_ADDRESS, [protocolAddress]);
 
   // Get active lottery IDs
-  const { data: activeLotteryIds, isLoading: isLoadingIds } = useReadContract({
-    address: contracts.MeltyFiProtocol,
+  const {
+    data: activeLotteryIds,
+    isLoading: isLoadingIds,
+    error: activeIdsError,
+  } = useReadContract({
+    address: protocolAddress,
     abi: ABIS.MeltyFiProtocol,
     functionName: "getActiveLotteries",
     query: {
       refetchInterval: 15_000, // Poll every 15 seconds
+      enabled,
     },
   });
 
   // Get protocol stats
-  const { data: stats } = useReadContract({
-    address: contracts.MeltyFiProtocol,
+  const { data: stats, error: statsError } = useReadContract({
+    address: protocolAddress,
     abi: ABIS.MeltyFiProtocol,
     functionName: "getProtocolStats",
+    query: {
+      enabled,
+    },
   });
 
   // TODO: Fetch individual lottery details for each ID
@@ -36,6 +48,7 @@ export function useLotteries() {
     totalLotteries: stats ? Number((stats as any[])[0]) : 0,
     activeLotteries: stats ? Number((stats as any[])[1]) : 0,
     isLoading: isLoadingIds,
+    error: activeIdsError || statsError || (enabled ? null : new Error("MeltyFiProtocol contract unavailable")),
   };
 }
 
@@ -45,14 +58,17 @@ export function useLotteries() {
 export function useLottery(lotteryId: number) {
   const chainId = useChainId();
   const contracts = getContractsByChainId(chainId);
+  const protocolAddress = contracts.MeltyFiProtocol;
+  const enabled = useMemo(() => protocolAddress !== ZERO_ADDRESS && lotteryId >= 0, [protocolAddress, lotteryId]);
 
   const { data, isLoading, error, refetch } = useReadContract({
-    address: contracts.MeltyFiProtocol,
+    address: protocolAddress,
     abi: ABIS.MeltyFiProtocol,
     functionName: "getLottery",
     args: [BigInt(lotteryId)],
     query: {
       refetchInterval: 10_000, // Poll every 10 seconds
+      enabled,
     },
   });
 
@@ -79,7 +95,7 @@ export function useLottery(lotteryId: number) {
   return {
     lottery,
     isLoading,
-    error,
+    error: error || (enabled ? null : new Error("MeltyFiProtocol contract unavailable")),
     refetch,
   };
 }
@@ -90,20 +106,30 @@ export function useLottery(lotteryId: number) {
 export function useUserLotteries(userAddress?: `0x${string}`) {
   const chainId = useChainId();
   const contracts = getContractsByChainId(chainId);
+  const protocolAddress = contracts.MeltyFiProtocol;
+  const enabled = useMemo(
+    () => protocolAddress !== ZERO_ADDRESS && !!userAddress,
+    [protocolAddress, userAddress],
+  );
 
-  const { data: lotteryIds, isLoading } = useReadContract({
-    address: contracts.MeltyFiProtocol,
+  const {
+    data: lotteryIds,
+    isLoading,
+    error,
+  } = useReadContract({
+    address: protocolAddress,
     abi: ABIS.MeltyFiProtocol,
     functionName: "getUserLotteries",
     args: userAddress ? [userAddress] : undefined,
     query: {
-      enabled: !!userAddress,
+      enabled,
     },
   });
 
   return {
     lotteryIds: (lotteryIds as bigint[]) || [],
     isLoading,
+    error: error || (enabled || !userAddress ? null : new Error("MeltyFiProtocol contract unavailable")),
   };
 }
 
@@ -113,20 +139,30 @@ export function useUserLotteries(userAddress?: `0x${string}`) {
 export function useUserParticipations(userAddress?: `0x${string}`) {
   const chainId = useChainId();
   const contracts = getContractsByChainId(chainId);
+  const protocolAddress = contracts.MeltyFiProtocol;
+  const enabled = useMemo(
+    () => protocolAddress !== ZERO_ADDRESS && !!userAddress,
+    [protocolAddress, userAddress],
+  );
 
-  const { data: lotteryIds, isLoading } = useReadContract({
-    address: contracts.MeltyFiProtocol,
+  const {
+    data: lotteryIds,
+    isLoading,
+    error,
+  } = useReadContract({
+    address: protocolAddress,
     abi: ABIS.MeltyFiProtocol,
     functionName: "getUserParticipations",
     args: userAddress ? [userAddress] : undefined,
     query: {
-      enabled: !!userAddress,
+      enabled,
     },
   });
 
   return {
     lotteryIds: (lotteryIds as bigint[]) || [],
     isLoading,
+    error: error || (enabled || !userAddress ? null : new Error("MeltyFiProtocol contract unavailable")),
   };
 }
 
@@ -136,18 +172,24 @@ export function useUserParticipations(userAddress?: `0x${string}`) {
 export function useWinProbability(userAddress?: `0x${string}`, lotteryId?: number) {
   const chainId = useChainId();
   const contracts = getContractsByChainId(chainId);
+  const protocolAddress = contracts.MeltyFiProtocol;
+  const enabled = useMemo(
+    () => protocolAddress !== ZERO_ADDRESS && !!userAddress && lotteryId !== undefined,
+    [protocolAddress, userAddress, lotteryId],
+  );
 
-  const { data: probability } = useReadContract({
-    address: contracts.MeltyFiProtocol,
+  const { data: probability, error } = useReadContract({
+    address: protocolAddress,
     abi: ABIS.MeltyFiProtocol,
     functionName: "calculateWinProbability",
     args: userAddress && lotteryId !== undefined ? [userAddress, BigInt(lotteryId)] : undefined,
     query: {
-      enabled: !!userAddress && lotteryId !== undefined,
+      enabled,
     },
   });
 
   return {
     probability: probability ? Number(probability) / 100 : 0, // Convert from basis points to percentage
+    error: error || (enabled ? null : new Error("MeltyFiProtocol contract unavailable")),
   };
 }

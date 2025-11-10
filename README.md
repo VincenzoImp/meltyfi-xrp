@@ -37,7 +37,13 @@ MeltyFi is a decentralized NFT liquidity protocol that allows NFT holders to cre
 
 ### Contract Addresses
 
-> Deployed contracts will be listed here after deployment
+Deployment artifacts are automatically synchronized to:
+
+- `packages/hardhat/deployments/{network}/meltyfi.json`
+- `packages/nextjs/contracts/deployedContracts.ts`
+- `packages/nextjs/lib/contracts.ts`
+
+Run `yarn deploy --network <network>` to refresh the addresses consumed by the frontend.
 
 ## Requirements
 
@@ -81,7 +87,11 @@ yarn hardhat:compile
 ### 5. Run Tests
 
 ```bash
+# Smart contracts
 yarn hardhat:test
+
+# Frontend hooks & components
+yarn workspace @meltyfi/nextjs test
 ```
 
 ### 6. Deploy to XRP EVM Testnet

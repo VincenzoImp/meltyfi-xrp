@@ -9,7 +9,17 @@ import { formatNumber } from "~~/lib/utils";
  * ProtocolStats - Displays overall protocol statistics
  */
 export function ProtocolStats() {
-  const { totalLotteries, activeLotteries, isLoading } = useLotteries();
+  const { totalLotteries, activeLotteries, isLoading, error } = useLotteries();
+
+  if (error) {
+    return (
+      <Card className="col-span-full">
+        <CardContent className="pt-6">
+          <p className="text-sm text-destructive">Unable to load protocol stats: {error.message}</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const stats = [
     {

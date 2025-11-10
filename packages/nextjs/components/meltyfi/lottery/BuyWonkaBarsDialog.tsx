@@ -19,7 +19,7 @@ import { Separator } from "~~/components/ui/separator";
 import { useBuyWonkaBars } from "~~/hooks/meltyfi";
 import { useWonkaBar } from "~~/hooks/meltyfi";
 import { ERROR_MESSAGES, MAX_USER_BALANCE_PERCENTAGE } from "~~/lib/constants";
-import { calculatePercentage, formatEth } from "~~/lib/utils";
+import { calculatePercentage, formatXrp } from "~~/lib/utils";
 import type { Lottery } from "~~/types/lottery";
 
 interface BuyWonkaBarsDialogProps {
@@ -34,7 +34,7 @@ interface BuyWonkaBarsDialogProps {
 export function BuyWonkaBarsDialog({ lottery, open, onOpenChange }: BuyWonkaBarsDialogProps) {
   const { address } = useAccount();
   const [quantity, setQuantity] = useState("1");
-  const { buyWonkaBars, isPending, isSuccess } = useBuyWonkaBars();
+  const { buyWonkaBars, isPending, isSuccess, error: purchaseError, canTransact } = useBuyWonkaBars();
   // Only fetch balance when lottery is available and dialog is open
   const { balance: userBalance } = useWonkaBar(
     address && lottery && open ? (address as `0x${string}`) : undefined,
@@ -57,7 +57,7 @@ export function BuyWonkaBarsDialog({ lottery, open, onOpenChange }: BuyWonkaBars
   const userWinProbability = calculatePercentage(Number(userBalance) + quantityNum, lottery.wonkaBarsMaxSupply);
 
   const isValidQuantity = quantityNum > 0 && quantityNum <= maxPurchase;
-  const canBuy = isValidQuantity && !isPending && address;
+  const canBuy = isValidQuantity && !isPending && !!address && canTransact;
 
   const handleBuy = async () => {
     if (!canBuy || !address) return;
@@ -83,12 +83,21 @@ export function BuyWonkaBarsDialog({ lottery, open, onOpenChange }: BuyWonkaBars
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div className="space-y-1">
               <p className="text-sm font-medium">{lottery.nftName}</p>
-              <p className="text-xs text-muted-foreground">{formatEth(lottery.wonkaBarPrice)} XRP per ticket</p>
+              <p className="text-xs text-muted-foreground">{formatXrp(lottery.wonkaBarPrice)} XRP per ticket</p>
             </div>
             <Badge variant="secondary">
               {remaining} / {lottery.wonkaBarsMaxSupply} left
             </Badge>
           </div>
+
+          {!canTransact && (
+            <div className="p-3 bg-destructive/10 rounded-lg">
+              <p className="text-xs text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                Contract not available on this network. Please switch to a supported network.
+              </p>
+            </div>
+          )}
 
           {/* Quantity Input */}
           <div className="space-y-2">
@@ -128,7 +137,7 @@ export function BuyWonkaBarsDialog({ lottery, open, onOpenChange }: BuyWonkaBars
                 <Ticket className="h-4 w-4" />
                 Total Cost
               </span>
-              <span className="font-medium">{formatEth(totalCost)} XRP</span>
+              <span className="font-medium">{formatXrp(totalCost)} XRP</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
@@ -175,6 +184,15 @@ export function BuyWonkaBarsDialog({ lottery, open, onOpenChange }: BuyWonkaBars
             {isPending ? "Buying..." : `Buy ${quantityNum} Ticket${quantityNum !== 1 ? "s" : ""}`}
           </Button>
         </DialogFooter>
+
+        {purchaseError && (
+          <div className="px-6 pb-4">
+            <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-xs flex gap-2 items-start">
+              <AlertCircle className="h-4 w-4 mt-0.5" />
+              <p>{purchaseError.message}</p>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

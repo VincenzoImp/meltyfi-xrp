@@ -1,4 +1,4 @@
-import { CONTRACTS } from "./contracts";
+import { getContractsByChainId } from "./contracts";
 import type { Address } from "viem";
 
 /**
@@ -16,8 +16,8 @@ import type { Address } from "viem";
 /**
  * Get the TestNFT collection address for the current network
  */
-export function getTestNFTAddress(networkName: string): Address {
-  const contracts = CONTRACTS[networkName] || CONTRACTS.localhost;
+export function getTestNFTAddress(chainId: number): Address {
+  const contracts = getContractsByChainId(chainId);
   return contracts.TestNFT;
 }
 
@@ -25,7 +25,7 @@ export function getTestNFTAddress(networkName: string): Address {
  * Get NFT collections for a specific network
  * Returns an array with the single TestNFT collection
  */
-export function getNFTCollections(networkName: string): Address[] {
-  const testNFT = getTestNFTAddress(networkName);
+export function getNFTCollections(chainId: number): Address[] {
+  const testNFT = getTestNFTAddress(chainId);
   return testNFT ? [testNFT] : [];
 }
