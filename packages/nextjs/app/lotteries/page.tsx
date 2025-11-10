@@ -33,7 +33,11 @@ const LotteriesPage: NextPage = () => {
     args: [id] as const,
   }));
 
-  const { data: lotteriesData, isLoading: isLoadingLotteries, error: contractsError } = useReadContracts({
+  const {
+    data: lotteriesData,
+    isLoading: isLoadingLotteries,
+    error: contractsError,
+  } = useReadContracts({
     contracts: lotteryContracts as any,
   });
 

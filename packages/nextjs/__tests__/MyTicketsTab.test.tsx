@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MyTicketsTab } from "~~/components/meltyfi/profile/MyTicketsTab";
 
@@ -25,9 +25,9 @@ describe("MyTicketsTab", () => {
   it("renders empty state when no tickets are owned", () => {
     mockUseUserParticipations.mockReturnValue({ lotteryIds: [], isLoading: false });
 
-    render(<MyTicketsTab address={viewerAddress} isOwnProfile />);
+    const { getByText } = render(<MyTicketsTab address={viewerAddress} isOwnProfile />);
 
-    expect(screen.getByText("You don't have any tickets yet")).toBeInTheDocument();
+    expect(getByText("You don't have any tickets yet")).toBeInTheDocument();
   });
 
   it("renders ticket card when balances exist", () => {
@@ -47,10 +47,9 @@ describe("MyTicketsTab", () => {
     });
     mockUseWonkaBar.mockReturnValue({ balance: 2n, isLoading: false, error: null });
 
-    render(<MyTicketsTab address={viewerAddress} isOwnProfile />);
+    const { getByText } = render(<MyTicketsTab address={viewerAddress} isOwnProfile />);
 
-    expect(screen.getByText("Test NFT")).toBeInTheDocument();
-    expect(screen.getByText("Your Tickets")).toBeInTheDocument();
+    expect(getByText("Test NFT")).toBeInTheDocument();
+    expect(getByText("Your Tickets")).toBeInTheDocument();
   });
 });
-

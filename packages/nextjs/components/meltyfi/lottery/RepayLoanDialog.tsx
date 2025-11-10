@@ -181,12 +181,7 @@ export function RepayLoanDialog({ lottery, open, onOpenChange }: RepayLoanDialog
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
             Cancel
           </Button>
-          <Button
-            onClick={handleRepay}
-            disabled={!canRepay}
-            variant="destructive"
-            className="min-w-[120px]"
-          >
+          <Button onClick={handleRepay} disabled={!canRepay} variant="destructive" className="min-w-[120px]">
             {isPending ? "Processing..." : `Repay ${formatXrp(repaymentAmount)} XRP`}
           </Button>
         </DialogFooter>

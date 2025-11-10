@@ -385,11 +385,7 @@ export function CreateLotteryForm() {
         >
           Cancel
         </Button>
-        <Button
-          type="submit"
-          className="flex-1"
-          disabled={!address || isPending || isSuccess || !canTransact}
-        >
+        <Button type="submit" className="flex-1" disabled={!address || isPending || isSuccess || !canTransact}>
           {isPending ? "Creating..." : isSuccess ? "Created!" : canTransact ? "Create Lottery" : "Unavailable"}
         </Button>
       </div>

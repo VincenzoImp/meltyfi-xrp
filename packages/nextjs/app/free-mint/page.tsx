@@ -44,7 +44,7 @@ export default function FreeMintPage() {
           functionName: "mint",
         },
         {
-          onSuccess: data => {
+          onSuccess: () => {
             toast.success("Minting your NFT...");
           },
           onError: error => {
@@ -52,7 +52,7 @@ export default function FreeMintPage() {
           },
         },
       );
-    } catch (error) {
+    } catch {
       toast.error("Failed to mint NFT");
     }
   };

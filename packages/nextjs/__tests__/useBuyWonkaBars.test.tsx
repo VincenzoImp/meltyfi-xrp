@@ -1,4 +1,4 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useBuyWonkaBars } from "~~/hooks/meltyfi/useBuyWonkaBars";
 
@@ -30,7 +30,7 @@ describe("useBuyWonkaBars", () => {
       await result.current.buyWonkaBars(1, 1, 1n);
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.isSuccess).toBe(true);
     expect(result.current.error).toBeNull();
     expect(mockWriteContractAsync).toHaveBeenCalledTimes(1);
   });
@@ -45,9 +45,8 @@ describe("useBuyWonkaBars", () => {
       await result.current.buyWonkaBars(1, 1, 1n);
     });
 
-    await waitFor(() => expect(result.current.error).not.toBeNull());
+    expect(result.current.error).not.toBeNull();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error?.message).toContain("write reverted");
   });
 });
-

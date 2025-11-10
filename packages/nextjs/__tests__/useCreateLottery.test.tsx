@@ -1,4 +1,4 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useCreateLottery } from "~~/hooks/meltyfi/useCreateLottery";
 import type { CreateLotteryFormData } from "~~/types/lottery";
@@ -91,9 +91,8 @@ describe("useCreateLottery", () => {
       await result.current.createLottery(formData);
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(false));
+    expect(result.current.isSuccess).toBe(false);
     expect(mockNotificationError).toHaveBeenCalled();
     expect(mockWriteContractAsync).not.toHaveBeenCalled();
   });
 });
-
