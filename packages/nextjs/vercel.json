@@ -1,3 +1,5 @@
 {
-  "installCommand": "yarn install"
+  "installCommand": "cd ../.. && yarn install",
+  "buildCommand": "cd ../.. && yarn build",
+  "outputDirectory": ".next"
 }
