@@ -6,9 +6,9 @@ import { join } from "path";
  * API route to serve NFT metadata from the public folder
  * GET /api/metadata/[tokenId]
  */
-export async function GET(_request: NextRequest, { params }: { params: { tokenId: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ tokenId: string }> }) {
   try {
-    const { tokenId } = params;
+    const { tokenId } = await params;
 
     // Validate tokenId is a number
     if (!/^\d+$/.test(tokenId)) {
